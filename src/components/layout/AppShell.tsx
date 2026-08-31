@@ -1,6 +1,6 @@
-import React, { useState, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, CheckSquare, Dumbbell, Activity, Apple, ActivitySquare, Settings, Calendar, Trophy, BookOpen } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, Dumbbell, Activity, Apple, ActivitySquare, Settings, Calendar, BookOpen } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 interface AppShellProps {

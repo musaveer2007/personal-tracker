@@ -1,9 +1,7 @@
-import { DashboardHero } from '../components/dashboard/DashboardHero';
 import { TodayScore, TodayChecklist } from '../components/dashboard/TodayComponents';
 import { useAppStore } from '../data/store';
 import { getTodayStr, getChallengeStats } from '../lib/dateUtils';
 import { CheckCircle2 } from 'lucide-react';
-import { cn } from '../lib/utils';
 
 export const Today = () => {
   const { tasks, taskCompletions, settings } = useAppStore();

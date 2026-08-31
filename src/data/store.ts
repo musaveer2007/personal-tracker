@@ -1,8 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { AppState, Task, TaskCompletion, Workout, Run, Nutrition, BodyMeasurement, SleepEntry, JournalEntry, ChallengeSettings } from './types';
+import type { AppState } from './types';
 import { defaultSettings, defaultTasks } from './seed';
-import { format } from 'date-fns';
 
 export const useAppStore = create<AppState>()(
   persist(

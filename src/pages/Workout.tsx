@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAppStore } from '../data/store';
 import { getTodayStr } from '../lib/dateUtils';
-import type { Workout as WorkoutType, WorkoutExercise, WorkoutSet } from '../data/types';
+import type { Workout as WorkoutType, WorkoutExercise } from '../data/types';
 import { v4 as uuidv4 } from 'uuid';
 import { Plus, Check, Save } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -102,7 +102,7 @@ export const Workout = () => {
       </div>
 
       <div className="space-y-8">
-        {currentWorkout.exercises.map((exercise, eIdx) => (
+        {currentWorkout.exercises.map((exercise) => (
           <div key={exercise.id} className="card bg-surface/50">
             <div className="flex mb-4 gap-4">
               <input 

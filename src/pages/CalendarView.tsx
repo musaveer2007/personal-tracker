@@ -1,4 +1,3 @@
-import React from 'react';
 import { useAppStore } from '../data/store';
 import { getChallengeStats } from '../lib/dateUtils';
 import { cn } from '../lib/utils';

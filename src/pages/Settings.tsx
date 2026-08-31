@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useAppStore } from '../data/store';
-import { Save, RefreshCw, Plus, Trash2 } from 'lucide-react';
+import { RefreshCw, Plus, Trash2 } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import type { Task } from '../data/types';
 

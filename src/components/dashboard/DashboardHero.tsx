@@ -1,6 +1,5 @@
 import { getChallengeStats } from '../../lib/dateUtils';
 import { useAppStore } from '../../data/store';
-import { cn } from '../../lib/utils';
 
 export const DashboardHero = () => {
   const { settings } = useAppStore();

@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAppStore } from '../data/store';
 import { getTodayStr } from '../lib/dateUtils';
 import type { Run } from '../data/types';
 import { v4 as uuidv4 } from 'uuid';
 import { Activity, Save, Clock, Flame, Navigation } from 'lucide-react';
-import { cn } from '../lib/utils';
 
 export const Running = () => {
   const { runs, saveRun } = useAppStore();

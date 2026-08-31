@@ -1,10 +1,9 @@
-import React from 'react';
 import { useAppStore } from '../data/store';
 import { getChallengeStats } from '../lib/dateUtils';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 export const Progress = () => {
-  const { settings, measurements, taskCompletions, workouts, runs } = useAppStore();
+  const { settings, measurements, workouts, runs } = useAppStore();
   const stats = getChallengeStats(settings.startDate, settings.endDate);
 
   const weightData = measurements.map(m => ({
