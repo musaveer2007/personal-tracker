@@ -51,3 +51,25 @@ export const formatDateDisplay = (dateStr: string) => {
   if (!dateStr) return '';
   return format(parseISO(dateStr), 'MMM d, yyyy');
 };
+
+export const calculateStreak = (manualDayCompletions: Record<string, boolean>) => {
+  let streak = 0;
+  const today = new Date();
+  
+  // Check from today backwards
+  for (let i = 0; i < 100; i++) {
+    const dateToCheck = new Date(today);
+    dateToCheck.setDate(today.getDate() - i);
+    const dateStr = format(dateToCheck, 'yyyy-MM-dd');
+    
+    if (manualDayCompletions[dateStr]) {
+      streak++;
+    } else {
+      // If we missed yesterday, streak is broken. 
+      // If we missed today, we don't break the streak immediately if they still have time to finish it, 
+      // but for simplicity, we'll just stop counting if yesterday was missed.
+      if (i > 0) break; 
+    }
+  }
+  return streak;
+};

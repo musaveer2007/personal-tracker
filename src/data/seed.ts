@@ -30,3 +30,31 @@ export const defaultTasks: Task[] = [
   { id: uuidv4(), name: 'Haircare (Shampoo)', category: 'grooming', frequency: 'specific_days', daysOfWeek: [1, 3, 5] }, // Mon, Wed, Fri
   { id: uuidv4(), name: 'Sleep 7.5-9 hours', category: 'recovery', frequency: 'daily' },
 ];
+
+export const dhavaneshSettings: ChallengeSettings = {
+  startDate: '2026-09-01',
+  endDate: '2026-12-09',
+  startingWeight: 50,
+  goalWeightMin: 55,
+  goalWeightMax: 60,
+  height: 165, // 5'5"
+  targetCalories: 2500, // Budget-friendly surplus
+  targetProtein: 100, // Specifically requested
+  targetCarbs: 350,
+  targetFat: 70,
+  targetWater: 3000,
+  targetSteps: 8000,
+  targetSleepMin: 7.5,
+  targetSleepMax: 9,
+};
+
+export const dhavaneshTasks: Task[] = [
+  { id: uuidv4(), name: 'Hit calorie surplus (~2500 kcal)', category: 'nutrition', frequency: 'daily' },
+  { id: uuidv4(), name: 'Hit ~100g protein (Eggs, milk, dal, chana)', category: 'nutrition', frequency: 'daily' },
+  { id: uuidv4(), name: 'Drink 3L water', category: 'nutrition', frequency: 'daily' },
+  { id: uuidv4(), name: 'College 5:00 AM - 5:00 PM', category: 'productivity', frequency: 'specific_days', daysOfWeek: [1, 2, 3, 4, 5] },
+  { id: uuidv4(), name: 'Home Workout (Push/Pull/Legs)', category: 'fitness', frequency: 'specific_days', daysOfWeek: [1, 2, 4, 5, 6] }, // Mon, Tue, Thu, Fri, Sat
+  { id: uuidv4(), name: 'Project/College Work (8:00 - 9:15 PM)', category: 'productivity', frequency: 'daily' },
+  { id: uuidv4(), name: 'Prepare for tomorrow (9:15 PM)', category: 'grooming', frequency: 'daily' },
+  { id: uuidv4(), name: 'Sleep by 9:30 PM', category: 'recovery', frequency: 'daily' },
+];

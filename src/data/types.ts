@@ -1,4 +1,4 @@
-export type Category = 'fitness' | 'nutrition' | 'recovery' | 'grooming';
+export type Category = 'fitness' | 'nutrition' | 'recovery' | 'grooming' | 'productivity';
 
 export interface Task {
   id: string;
@@ -98,7 +98,7 @@ export interface ChallengeSettings {
   targetSleepMax: number;
 }
 
-export interface AppState {
+export interface ProfileData {
   settings: ChallengeSettings;
   tasks: Task[];
   taskCompletions: TaskCompletion[];
@@ -109,6 +109,16 @@ export interface AppState {
   sleep: Record<string, SleepEntry>;
   journal: Record<string, JournalEntry>;
   manualDayCompletions: Record<string, boolean>;
+}
+
+export interface ProfileMetadata {
+  id: string;
+  name: string;
+  subtitle: string;
+}
+
+export interface AppState extends ProfileData {
+  currentProfileId: string;
   
   // Actions
   updateSettings: (settings: Partial<ChallengeSettings>) => void;
@@ -124,4 +134,26 @@ export interface AppState {
   updateSleep: (date: string, sleep: SleepEntry) => void;
   updateJournal: (date: string, journal: JournalEntry) => void;
   resetData: () => void;
+  switchProfile: (id: string) => void;
+}
+
+export interface RootState {
+  profiles: Record<string, ProfileData>;
+  currentProfileId: string;
+  
+  // Actions that operate on `state.profiles[state.currentProfileId]`
+  updateSettings: (settings: Partial<ChallengeSettings>) => void;
+  addTask: (task: Task) => void;
+  updateTask: (task: Task) => void;
+  deleteTask: (taskId: string) => void;
+  toggleTaskCompletion: (taskId: string, date: string) => void;
+  toggleManualDayCompletion: (date: string) => void;
+  saveWorkout: (workout: Workout) => void;
+  saveRun: (run: Run) => void;
+  updateNutrition: (date: string, nutrition: Partial<Nutrition>) => void;
+  addMeasurement: (measurement: BodyMeasurement) => void;
+  updateSleep: (date: string, sleep: SleepEntry) => void;
+  updateJournal: (date: string, journal: JournalEntry) => void;
+  resetData: () => void;
+  switchProfile: (id: string) => void;
 }
