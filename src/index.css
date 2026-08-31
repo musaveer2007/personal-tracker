@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-background text-textMain font-sans antialiased overflow-x-hidden;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-black font-semibold px-4 py-2 rounded-md hover:bg-yellow-500 transition-colors active:scale-95;
+  }
+  .btn-secondary {
+    @apply bg-surfaceHighlight text-white font-semibold px-4 py-2 rounded-md hover:bg-neutral-700 transition-colors active:scale-95 border border-border;
+  }
+  .card {
+    @apply bg-surface border border-border rounded-xl p-4 shadow-sm;
+  }
+}
+
+/* Custom Checkbox Animation */
+@keyframes check {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+.checkbox-animate {
+  animation: check 0.2s ease-in-out;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+::-webkit-scrollbar-thumb {
+  background: #262626;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #404040;
+}
