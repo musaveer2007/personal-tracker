@@ -165,28 +165,51 @@ export const useRootStore = create<RootState>()(
 export function useAppStore(): AppState;
 export function useAppStore<T>(selector: (state: AppState) => T): T;
 export function useAppStore<T>(selector?: (state: AppState) => T) {
-  return useRootStore((root) => {
-    const id = root.currentProfileId || 'musaveer';
-    const profile = root.profiles[id] || root.profiles['musaveer'];
-    
-    const appState: AppState = {
-      ...profile,
-      currentProfileId: root.currentProfileId,
-      updateSettings: root.updateSettings,
-      addTask: root.addTask,
-      updateTask: root.updateTask,
-      deleteTask: root.deleteTask,
-      toggleTaskCompletion: root.toggleTaskCompletion,
-      toggleManualDayCompletion: root.toggleManualDayCompletion,
-      saveWorkout: root.saveWorkout,
-      saveRun: root.saveRun,
-      updateNutrition: root.updateNutrition,
-      addMeasurement: root.addMeasurement,
-      updateSleep: root.updateSleep,
-      updateJournal: root.updateJournal,
-      resetData: root.resetData,
-      switchProfile: root.switchProfile,
-    };
-    return selector ? selector(appState) : appState;
-  });
+  const root = useRootStore();
+  const id = root.currentProfileId || 'musaveer';
+  const profile = root.profiles[id] || root.profiles['musaveer'];
+  
+  // Initialize default profile if it doesn't exist yet to prevent crashes
+  const safeProfile = profile || {
+    settings: {
+      startDate: new Date().toISOString(),
+      endDate: new Date(new Date().getTime() + 100 * 24 * 60 * 60 * 1000).toISOString(),
+      targetProtein: 0,
+      targetCalories: 0,
+      targetFat: 0,
+      targetWater: 0,
+      targetSteps: 0,
+      targetSleepMin: 0,
+      targetSleepMax: 0,
+    },
+    tasks: [],
+    taskCompletions: [],
+    workouts: [],
+    runs: [],
+    nutrition: {},
+    measurements: [],
+    sleep: {},
+    journal: {},
+    manualDayCompletions: {}
+  };
+  
+  const appState: AppState = {
+    ...safeProfile,
+    currentProfileId: root.currentProfileId,
+    updateSettings: root.updateSettings,
+    addTask: root.addTask,
+    updateTask: root.updateTask,
+    deleteTask: root.deleteTask,
+    toggleTaskCompletion: root.toggleTaskCompletion,
+    toggleManualDayCompletion: root.toggleManualDayCompletion,
+    saveWorkout: root.saveWorkout,
+    saveRun: root.saveRun,
+    updateNutrition: root.updateNutrition,
+    addMeasurement: root.addMeasurement,
+    updateSleep: root.updateSleep,
+    updateJournal: root.updateJournal,
+    resetData: root.resetData,
+    switchProfile: root.switchProfile,
+  };
+  return selector ? selector(appState) : appState;
 }
