@@ -23,11 +23,17 @@ export const TodayScore = () => {
     <div className="card mb-6 flex items-center justify-between animate-slide-up" style={{ animationDelay: '0.1s' }}>
       <div>
         <h3 className="text-sm font-bold tracking-widest text-textMuted uppercase mb-1">Today's Score</h3>
-        <div className="flex items-baseline space-x-3">
-          <span className="text-4xl font-black text-white">{percentage}%</span>
-          <span className="text-sm font-medium text-textMuted">
-            Completed: {completedToday} / {totalToday} tasks
+        <div className="flex items-baseline space-x-4 mb-2">
+          <span className="text-6xl font-black text-white">{percentage}</span>
+          <span className={cn(
+            "text-lg font-bold uppercase tracking-widest",
+            percentage >= 80 ? "text-success" : percentage >= 50 ? "text-primary" : "text-textMuted"
+          )}>
+            {percentage >= 80 ? "Excellent" : percentage >= 50 ? "Good" : "Keep Pushing"}
           </span>
+        </div>
+        <div className="text-sm font-medium text-textMuted uppercase tracking-wider">
+          Completed: {completedToday} / {totalToday}
         </div>
       </div>
       

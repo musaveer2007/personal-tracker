@@ -22,6 +22,36 @@ export const Workout = () => {
   const dayOfWeek = new Date().getDay();
   const expectedWorkoutName = WORKOUT_SCHEDULE[dayOfWeek];
 
+  const getPreviousPerformance = (exerciseName: string) => {
+    if (!exerciseName) return null;
+    const pastWorkouts = workouts.filter(w => w.date !== today);
+    for (let i = pastWorkouts.length - 1; i >= 0; i--) {
+      const ex = pastWorkouts[i].exercises.find(e => e.name.toLowerCase() === exerciseName.toLowerCase());
+      if (ex && ex.sets.some(s => s.completed)) {
+        // Find best set (highest weight)
+        const bestSet = ex.sets.reduce((best, current) => {
+          if (!current.completed) return best;
+          return (current.weight > best.weight) ? current : best;
+        }, { weight: 0, reps: 0 });
+        if (bestSet.weight > 0) return bestSet;
+      }
+    }
+    return null;
+  };
+
+  const calculateExerciseStats = (exercise: WorkoutExercise) => {
+    let volume = 0;
+    let e1rm = 0;
+    exercise.sets.forEach(set => {
+      if (set.completed && set.weight > 0 && set.reps > 0) {
+        volume += set.weight * set.reps;
+        const setE1rm = set.weight * (1 + set.reps / 30);
+        if (setE1rm > e1rm) e1rm = setE1rm;
+      }
+    });
+    return { volume, e1rm: Math.round(e1rm) };
+  };
+
   const [currentWorkout, setCurrentWorkout] = useState<WorkoutType | null>(null);
 
   useEffect(() => {
@@ -120,6 +150,15 @@ export const Workout = () => {
                 className="bg-transparent border-b border-border p-2 w-24 text-center font-bold focus:outline-none focus:border-primary text-textMuted"
               />
             </div>
+
+            {exercise.name && getPreviousPerformance(exercise.name) && (
+              <div className="mb-4 px-2 flex items-center justify-between bg-surfaceHighlight/20 p-2 rounded-lg">
+                <span className="text-xs font-bold text-textMuted uppercase tracking-widest">Previous Best</span>
+                <span className="text-sm font-black text-primary">
+                  {getPreviousPerformance(exercise.name)?.weight} kg × {getPreviousPerformance(exercise.name)?.reps}
+                </span>
+              </div>
+            )}
             
             <div className="space-y-2">
               <div className="flex text-xs font-bold tracking-widest text-textMuted uppercase mb-2 px-2">
@@ -162,6 +201,19 @@ export const Workout = () => {
                 </div>
               ))}
             </div>
+            
+            {exercise.sets.some(s => s.completed) && (
+              <div className="mt-4 pt-4 border-t border-border/50 flex items-center justify-between">
+                <div className="text-center">
+                  <p className="text-xs font-bold text-textMuted uppercase tracking-widest mb-1">Volume</p>
+                  <p className="text-lg font-black text-white">{calculateExerciseStats(exercise).volume} kg</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs font-bold text-textMuted uppercase tracking-widest mb-1">Est 1RM</p>
+                  <p className="text-lg font-black text-primary">{calculateExerciseStats(exercise).e1rm} kg</p>
+                </div>
+              </div>
+            )}
           </div>
         ))}
 

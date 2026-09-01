@@ -72,6 +72,10 @@ export interface SleepEntry {
   date: string;
   hours: number;
   quality: 'poor' | 'average' | 'good' | 'excellent';
+  bedtime?: string;
+  wakeTime?: string;
+  energy?: number; // 1-5
+  mood?: 'excellent' | 'good' | 'average' | 'tired' | 'difficult';
 }
 
 export interface JournalEntry {

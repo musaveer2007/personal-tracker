@@ -1,8 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useAppStore } from '../data/store';
 import { getTodayStr } from '../lib/dateUtils';
-import { Save, Plus } from 'lucide-react';
+import { Save, Plus, Search, BookmarkPlus, ChevronRight } from 'lucide-react';
 import { cn } from '../lib/utils';
+
+const FOOD_DATABASE = [
+  { name: 'Egg (1 large)', calories: 72, protein: 6, carbs: 0.6, fat: 4.8 },
+  { name: 'Chicken Breast (100g)', calories: 165, protein: 31, carbs: 0, fat: 3.6 },
+  { name: 'White Rice (100g cooked)', calories: 130, protein: 2.7, carbs: 28, fat: 0.3 },
+  { name: 'Whole Milk (100ml)', calories: 61, protein: 3.2, carbs: 4.8, fat: 3.3 },
+  { name: 'Curd/Yogurt (100g)', calories: 98, protein: 11, carbs: 3.4, fat: 4.3 },
+  { name: 'Paneer (100g)', calories: 265, protein: 18, carbs: 1.2, fat: 20 },
+  { name: 'Oats (100g)', calories: 389, protein: 16.9, carbs: 66.3, fat: 6.9 },
+  { name: 'Banana (1 medium)', calories: 105, protein: 1.3, carbs: 27, fat: 0.3 },
+  { name: 'Peanuts (100g)', calories: 567, protein: 25.8, carbs: 16.1, fat: 49.2 },
+  { name: 'Chana (100g boiled)', calories: 164, protein: 8.9, carbs: 27.4, fat: 2.6 },
+];
 
 export const Nutrition = () => {
   const { settings, nutrition, updateNutrition } = useAppStore();
@@ -18,6 +31,7 @@ export const Nutrition = () => {
   };
 
   const [localNut, setLocalNut] = useState(currentNutrition);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     setLocalNut(currentNutrition);
@@ -27,10 +41,16 @@ export const Nutrition = () => {
     updateNutrition(today, localNut);
   };
 
-  const addWater = (amount: number) => {
-    const updated = { ...localNut, water: localNut.water + amount };
+  const addFood = (food: typeof FOOD_DATABASE[0]) => {
+    const updated = {
+      ...localNut,
+      calories: localNut.calories + food.calories,
+      protein: localNut.protein + food.protein,
+      carbs: localNut.carbs + food.carbs,
+      fat: localNut.fat + food.fat
+    };
     setLocalNut(updated);
-    updateNutrition(today, updated); // Auto save water since it's a quick action
+    updateNutrition(today, updated);
   };
 
   const macros = [
@@ -90,37 +110,42 @@ export const Nutrition = () => {
           </div>
         </div>
 
-        {/* Water */}
-        <div className="card space-y-6 flex flex-col">
-          <h2 className="text-sm font-bold tracking-widest text-textMuted uppercase">WATER TRACKER</h2>
-          
-          <div className="flex-1 flex flex-col items-center justify-center">
-            <div className="relative w-48 h-48 mb-6">
-              <svg className="w-full h-full transform -rotate-90">
-                <circle cx="96" cy="96" r="88" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-surfaceHighlight" />
-                <circle 
-                  cx="96" cy="96" r="88" stroke="currentColor" strokeWidth="8" fill="transparent" 
-                  strokeDasharray={2 * Math.PI * 88}
-                  strokeDashoffset={2 * Math.PI * 88 * (1 - Math.min(1, localNut.water / settings.targetWater))}
-                  className="text-blue-500 transition-all duration-1000 ease-out" 
-                />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-3xl font-black text-white">{localNut.water}</span>
-                <span className="text-sm font-bold text-textMuted tracking-widest uppercase">/ {settings.targetWater} ml</span>
-              </div>
-            </div>
+        </div>
 
-            <div className="flex space-x-4">
-              <button onClick={() => addWater(250)} className="btn-secondary rounded-full flex items-center space-x-2">
-                <Plus className="w-4 h-4" />
-                <span>250 ml</span>
-              </button>
-              <button onClick={() => addWater(500)} className="btn-secondary rounded-full flex items-center space-x-2">
-                <Plus className="w-4 h-4" />
-                <span>500 ml</span>
-              </button>
+        {/* Food Library */}
+        <div className="card space-y-4 md:col-span-2">
+          <div className="flex justify-between items-center">
+            <h2 className="text-sm font-bold tracking-widest text-textMuted uppercase">FOOD LIBRARY</h2>
+            <div className="relative w-48">
+              <input 
+                type="text" 
+                placeholder="Search food..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-surface border border-border rounded-lg p-2 pl-8 text-sm focus:outline-none focus:border-primary text-white placeholder-textMuted"
+              />
+              <Search className="w-4 h-4 text-textMuted absolute left-2 top-2.5" />
             </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-80 overflow-y-auto pr-2">
+            {FOOD_DATABASE.filter(f => f.name.toLowerCase().includes(searchQuery.toLowerCase())).map(food => (
+              <button 
+                key={food.name}
+                onClick={() => addFood(food)}
+                className="flex items-center justify-between p-3 rounded-lg border border-border bg-surface hover:border-primary/50 transition-colors group text-left"
+              >
+                <div>
+                  <p className="font-bold text-white text-sm">{food.name}</p>
+                  <p className="text-xs text-textMuted mt-0.5">
+                    {food.calories}kcal • P:{food.protein}g • C:{food.carbs}g • F:{food.fat}g
+                  </p>
+                </div>
+                <div className="w-8 h-8 rounded-full bg-surfaceHighlight flex items-center justify-center group-hover:bg-primary group-hover:text-black transition-colors">
+                  <Plus className="w-4 h-4" />
+                </div>
+              </button>
+            ))}
           </div>
         </div>
       </div>

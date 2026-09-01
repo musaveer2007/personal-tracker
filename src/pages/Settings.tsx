@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useAppStore } from '../data/store';
-import { RefreshCw, Plus, Trash2 } from 'lucide-react';
+import { RefreshCw, Plus, Trash2, Download, Upload } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
+import { useRef } from 'react';
 import type { Task } from '../data/types';
 
 export const Settings = () => {
@@ -9,6 +10,7 @@ export const Settings = () => {
 
   const [newTaskName, setNewTaskName] = useState('');
   const [newTaskCategory, setNewTaskCategory] = useState<Task['category']>('fitness');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleChange = (field: keyof typeof settings, value: any) => {
     updateSettings({ [field]: value });
@@ -29,6 +31,38 @@ export const Settings = () => {
       frequency: 'daily'
     });
     setNewTaskName('');
+  };
+
+  const handleExport = () => {
+    const data = localStorage.getItem('winter-arc-storage');
+    if (data) {
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `winter_arc_backup_${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  };
+
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const content = event.target?.result as string;
+          JSON.parse(content); // validate JSON
+          localStorage.setItem('winter-arc-storage', content);
+          alert('Backup restored successfully. The application will now reload.');
+          window.location.reload();
+        } catch (err) {
+          alert("Invalid backup file.");
+        }
+      };
+      reader.readAsText(file);
+    }
   };
 
   return (
@@ -164,6 +198,28 @@ export const Settings = () => {
           </div>
         </div>
         
+        <div className="card space-y-4">
+          <h2 className="text-sm font-bold tracking-widest text-textMuted uppercase mb-4">DATA MANAGEMENT</h2>
+          
+          <div className="flex space-x-4">
+            <button onClick={handleExport} className="flex-1 btn-secondary flex items-center justify-center space-x-2 py-3 border border-border rounded-lg hover:border-primary transition-colors">
+              <Download className="w-4 h-4" />
+              <span>EXPORT DATA (JSON)</span>
+            </button>
+            <input 
+              type="file" 
+              accept=".json" 
+              className="hidden" 
+              ref={fileInputRef}
+              onChange={handleImport}
+            />
+            <button onClick={() => fileInputRef.current?.click()} className="flex-1 btn-secondary flex items-center justify-center space-x-2 py-3 border border-border rounded-lg hover:border-blue-500 transition-colors">
+              <Upload className="w-4 h-4" />
+              <span>IMPORT DATA</span>
+            </button>
+          </div>
+        </div>
+
         <div className="card space-y-4 border-red-900/30">
           <h2 className="text-sm font-bold tracking-widest text-red-500 uppercase mb-4">DANGER ZONE</h2>
           <p className="text-sm text-textMuted mb-4">Resetting your data will erase all workouts, runs, and daily task progress.</p>

@@ -3,7 +3,8 @@ import { useAppStore } from '../data/store';
 import { getTodayStr } from '../lib/dateUtils';
 import type { Run } from '../data/types';
 import { v4 as uuidv4 } from 'uuid';
-import { Activity, Save, Clock, Flame, Navigation } from 'lucide-react';
+import { Activity, Save, Clock, Flame, Navigation, TrendingUp } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
 export const Running = () => {
   const { runs, saveRun } = useAppStore();
@@ -142,6 +143,46 @@ export const Running = () => {
           </select>
         </div>
       </div>
+      
+      {runs.length > 1 && (
+        <div className="card space-y-6 mb-8">
+          <h2 className="text-sm font-bold tracking-widest text-textMuted uppercase mb-4 flex items-center gap-2">
+            <TrendingUp className="w-4 h-4" /> PERFORMANCE TRENDS
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="h-48 w-full bg-surface/30 p-4 rounded-xl border border-border">
+              <h3 className="text-xs font-bold text-textMuted tracking-widest uppercase mb-4">Distance (km)</h3>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={[...runs].sort((a,b) => a.date.localeCompare(b.date))}>
+                  <XAxis dataKey="date" hide />
+                  <YAxis hide />
+                  <Tooltip 
+                    cursor={{ fill: 'rgba(245, 158, 11, 0.1)' }}
+                    contentStyle={{ backgroundColor: '#171717', border: '1px solid #262626', borderRadius: '0.5rem' }}
+                    labelFormatter={(val) => new Date(val).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  />
+                  <Bar dataKey="distance" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="h-48 w-full bg-surface/30 p-4 rounded-xl border border-border">
+              <h3 className="text-xs font-bold text-textMuted tracking-widest uppercase mb-4">Pace (min/km)</h3>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={[...runs].sort((a,b) => a.date.localeCompare(b.date)).map(r => ({ ...r, numPace: (r.time / r.distance) || 0 }))}>
+                  <XAxis dataKey="date" hide />
+                  <YAxis reversed hide />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#171717', border: '1px solid #262626', borderRadius: '0.5rem' }}
+                    labelFormatter={(val) => new Date(val).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  />
+                  <Line type="monotone" dataKey="numPace" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, fill: '#3b82f6', strokeWidth: 0 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div>
         <h2 className="text-sm font-bold tracking-widest text-textMuted uppercase mb-4">HISTORY</h2>

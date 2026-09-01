@@ -1,23 +1,30 @@
 import { type ReactNode } from 'react';
 import { NavLink, useLocation, useParams, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, CheckSquare, Dumbbell, Activity, Apple, ActivitySquare, Settings, Calendar, BookOpen, ArrowLeft } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, Dumbbell, Activity, Apple, ActivitySquare, Settings as SettingsIcon, Calendar, BookOpen, ArrowLeft, Droplets, UserCircle, HeartPulse, Sparkles, Scissors, Trophy } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useRootStore } from '../../data/store';
+import { CommandPalette } from './CommandPalette';
+import { useEffect } from 'react';
 
 interface AppShellProps {
   children: ReactNode;
 }
 
 const navItems = [
-  { path: 'overview', label: 'Overview', icon: LayoutDashboard },
+  { path: 'command-center', label: 'Command Center', icon: LayoutDashboard },
   { path: 'today', label: 'Today', icon: CheckSquare },
   { path: 'workout', label: 'Workout', icon: Dumbbell },
   { path: 'running', label: 'Running', icon: Activity },
   { path: 'nutrition', label: 'Nutrition', icon: Apple },
-  { path: 'progress', label: 'Progress', icon: ActivitySquare },
+  { path: 'water', label: 'Water', icon: Droplets },
+  { path: 'body', label: 'Body', icon: UserCircle },
+  { path: 'recovery', label: 'Recovery', icon: HeartPulse },
+  { path: 'skincare', label: 'Skincare', icon: Sparkles },
+  { path: 'haircare', label: 'Haircare', icon: Scissors },
   { path: 'calendar', label: 'Calendar', icon: Calendar },
+  { path: 'progress', label: 'Progress', icon: ActivitySquare },
   { path: 'journal', label: 'Journal', icon: BookOpen },
-  { path: 'settings', label: 'Settings', icon: Settings },
+  { path: 'achievements', label: 'Achievements', icon: Trophy },
 ];
 
 export const AppShell = ({ children }: AppShellProps) => {
@@ -35,8 +42,32 @@ export const AppShell = ({ children }: AppShellProps) => {
 
   const profileName = profileId === 'dhavanesh' ? 'DHAVANESH' : 'MUSAVEER';
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger if user is typing in an input
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      
+      const key = e.key.toLowerCase();
+      if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+        switch (key) {
+          case 't': navigate(`/profile/${profileId}/today`); break;
+          case 'w': navigate(`/profile/${profileId}/workout`); break;
+          case 'r': navigate(`/profile/${profileId}/running`); break;
+          case 'n': navigate(`/profile/${profileId}/nutrition`); break;
+          case 'p': navigate(`/profile/${profileId}/progress`); break;
+          case 'c': navigate(`/profile/${profileId}/calendar`); break;
+          case 'j': navigate(`/profile/${profileId}/journal`); break;
+        }
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [navigate, profileId]);
+
   return (
     <div className="min-h-screen bg-background flex flex-col md:flex-row text-textMain">
+      <CommandPalette />
       
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex w-64 flex-col border-r border-border bg-surface h-screen sticky top-0">
@@ -55,7 +86,7 @@ export const AppShell = ({ children }: AppShellProps) => {
           {navItems.map((item) => {
             const Icon = item.icon;
             const fullPath = getFullPath(item.path);
-            const isActive = location.pathname === fullPath || (item.path === 'overview' && location.pathname === `/profile/${profileId}`);
+            const isActive = location.pathname === fullPath || (item.path === 'command-center' && location.pathname === `/profile/${profileId}`);
             
             return (
               <NavLink
@@ -73,6 +104,20 @@ export const AppShell = ({ children }: AppShellProps) => {
               </NavLink>
             );
           })}
+          <div className="mt-4 pt-4 border-t border-border/50">
+            <NavLink
+              to={`/profile/${profileId}/settings`}
+              className={cn(
+                "flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors font-medium text-sm",
+                location.pathname === `/profile/${profileId}/settings`
+                  ? "bg-primary/10 text-primary" 
+                  : "text-textMuted hover:bg-surfaceHighlight hover:text-textMain"
+              )}
+            >
+              <SettingsIcon className={cn("w-5 h-5", location.pathname === `/profile/${profileId}/settings` ? "text-primary" : "text-textMuted")} />
+              <span>Settings</span>
+            </NavLink>
+          </div>
         </nav>
       </aside>
 
@@ -100,7 +145,7 @@ export const AppShell = ({ children }: AppShellProps) => {
           {navItems.slice(0, 5).map((item) => {
             const Icon = item.icon;
             const fullPath = getFullPath(item.path);
-            const isActive = location.pathname === fullPath || (item.path === 'overview' && location.pathname === `/profile/${profileId}`);
+            const isActive = location.pathname === fullPath || (item.path === 'command-center' && location.pathname === `/profile/${profileId}`);
             
             return (
               <NavLink
