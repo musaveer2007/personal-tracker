@@ -11,6 +11,26 @@ export const CalendarView = () => {
   const startDate = parseISO(settings.startDate);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
+  const getBodyweightStats = (date: string) => {
+    let pushups = 0;
+    let pullups = 0;
+    let squats = 0;
+
+    const dayWorkouts = workouts.filter(w => w.date === date);
+    dayWorkouts.forEach(w => {
+      if (w.bodyweightExercises) {
+        w.bodyweightExercises.forEach(bwe => {
+          const completedReps = bwe.sets.reduce((total, set) => set.completed ? total + set.reps : total, 0);
+          if (bwe.name === 'Pushups') pushups += completedReps;
+          if (bwe.name === 'Pullups') pullups += completedReps;
+          if (bwe.name === 'Squats') squats += completedReps;
+        });
+      }
+    });
+
+    return { pushups, pullups, squats };
+  };
+
   const days = Array.from({ length: 100 }, (_, i) => {
     const date = addDays(startDate, i);
     const dateStr = format(date, 'yyyy-MM-dd');
@@ -113,6 +133,39 @@ export const CalendarView = () => {
                   {workouts.filter(w => w.date === selectedDate).length} session(s)
                 </span>
               </div>
+
+              {(() => {
+                const bwStats = getBodyweightStats(selectedDate);
+                if (bwStats.pushups > 0 || bwStats.pullups > 0 || bwStats.squats > 0) {
+                  return (
+                    <div className="p-4 bg-surfaceHighlight rounded-xl border border-border space-y-2">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <Activity className="w-5 h-5 text-primary" />
+                        <span className="font-bold tracking-widest uppercase text-sm">Bodyweight Basics</span>
+                      </div>
+                      {bwStats.pushups > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-textMuted uppercase tracking-wider font-bold">Pushups</span>
+                          <span className="text-white font-black">{bwStats.pushups} reps</span>
+                        </div>
+                      )}
+                      {bwStats.pullups > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-textMuted uppercase tracking-wider font-bold">Pullups</span>
+                          <span className="text-white font-black">{bwStats.pullups} reps</span>
+                        </div>
+                      )}
+                      {bwStats.squats > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-textMuted uppercase tracking-wider font-bold">Squats</span>
+                          <span className="text-white font-black">{bwStats.squats} reps</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+                return null;
+              })()}
 
               <div className="flex items-center justify-between p-4 bg-surfaceHighlight rounded-xl border border-border">
                 <div className="flex items-center space-x-3">

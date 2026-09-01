@@ -40,18 +40,7 @@ export const Workout = () => {
     return null;
   };
 
-  const calculateExerciseStats = (exercise: WorkoutExercise) => {
-    let volume = 0;
-    let e1rm = 0;
-    exercise.sets.forEach(set => {
-      if (set.completed && set.weight > 0 && set.reps > 0) {
-        volume += set.weight * set.reps;
-        const setE1rm = set.weight * (1 + set.reps / 30);
-        if (setE1rm > e1rm) e1rm = setE1rm;
-      }
-    });
-    return { volume, e1rm: Math.round(e1rm) };
-  };
+
 
   const [currentWorkout, setCurrentWorkout] = useState<WorkoutType | null>(null);
   const [isDirty, setIsDirty] = useState(false);
@@ -59,13 +48,25 @@ export const Workout = () => {
 
   useEffect(() => {
     const existing = workouts.find(w => w.date === today);
-    const initial = existing || {
+    let initial = existing ? { ...existing } : {
       id: uuidv4(),
       date: today,
       name: expectedWorkoutName,
       exercises: [],
+      bodyweightExercises: [
+        { id: uuidv4(), name: 'Pushups' as const, sets: [] },
+        { id: uuidv4(), name: 'Pullups' as const, sets: [] },
+        { id: uuidv4(), name: 'Squats' as const, sets: [] }
+      ],
       completed: false,
     };
+    if (existing && !existing.bodyweightExercises) {
+      initial.bodyweightExercises = [
+        { id: uuidv4(), name: 'Pushups' as const, sets: [] },
+        { id: uuidv4(), name: 'Pullups' as const, sets: [] },
+        { id: uuidv4(), name: 'Squats' as const, sets: [] }
+      ];
+    }
     if (!isDirty && (!currentWorkout || currentWorkout.date !== today)) {
        setCurrentWorkout(initial);
        setOriginalWorkout(initial);
@@ -133,6 +134,36 @@ export const Workout = () => {
     setIsDirty(true);
   };
 
+  const addBodyweightSet = (exerciseId: string) => {
+    if (!currentWorkout || !currentWorkout.bodyweightExercises) return;
+    const updated = {
+      ...currentWorkout,
+      bodyweightExercises: currentWorkout.bodyweightExercises.map(ex => 
+        ex.id === exerciseId ? { ...ex, sets: [...ex.sets, { id: uuidv4(), reps: 0, completed: false }] } : ex
+      )
+    };
+    setCurrentWorkout(updated);
+    setIsDirty(true);
+  };
+
+  const updateBodyweightSet = (exerciseId: string, setId: string, field: string, value: any) => {
+    if (!currentWorkout || !currentWorkout.bodyweightExercises) return;
+    const updated = {
+      ...currentWorkout,
+      bodyweightExercises: currentWorkout.bodyweightExercises.map(ex => {
+        if (ex.id === exerciseId) {
+          return {
+            ...ex,
+            sets: ex.sets.map(s => s.id === setId ? { ...s, [field]: value } : s)
+          };
+        }
+        return ex;
+      })
+    };
+    setCurrentWorkout(updated);
+    setIsDirty(true);
+  };
+
   if (!currentWorkout) return null;
 
   return (
@@ -153,6 +184,66 @@ export const Workout = () => {
       </div>
 
       <div className="space-y-8">
+        {currentWorkout.bodyweightExercises && currentWorkout.bodyweightExercises.length > 0 && (
+          <div className="card bg-surface/50 border border-primary/20">
+            <h2 className="text-xl font-black text-white uppercase mb-6 tracking-wider flex items-center">
+              <span className="w-2 h-6 bg-primary rounded-full mr-3"></span>
+              Bodyweight Basics
+            </h2>
+            
+            <div className="space-y-6">
+              {currentWorkout.bodyweightExercises.map((bwEx) => (
+                <div key={bwEx.id} className="border-t border-border/50 pt-4 first:border-0 first:pt-0">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-bold text-white uppercase">{bwEx.name}</h3>
+                    <button onClick={() => addBodyweightSet(bwEx.id)} className="text-primary hover:text-primary/80 transition-colors flex items-center text-sm font-bold uppercase tracking-widest">
+                      <Plus className="w-4 h-4 mr-1" /> Add Set
+                    </button>
+                  </div>
+                  
+                  {bwEx.sets.length > 0 ? (
+                    <div className="space-y-2">
+                      <div className="flex text-xs font-bold tracking-widest text-textMuted uppercase mb-2 px-2">
+                        <span className="w-12 text-center">Set</span>
+                        <span className="flex-1 text-center">Reps</span>
+                        <span className="w-12 text-center">Done</span>
+                      </div>
+                      
+                      {bwEx.sets.map((set, sIdx) => (
+                        <div key={set.id} className="flex items-center space-x-4 bg-surfaceHighlight/30 p-2 rounded-lg border border-transparent hover:border-border transition-colors">
+                          <span className="w-12 text-center font-bold text-textMuted">{sIdx + 1}</span>
+                          <div className="flex-1">
+                            <input 
+                              type="number" 
+                              value={set.reps || ''} 
+                              onChange={(e) => updateBodyweightSet(bwEx.id, set.id, 'reps', Number(e.target.value))}
+                              className="w-full bg-surface border border-border rounded-md p-2 text-center text-white focus:outline-none focus:border-primary"
+                              placeholder="Reps"
+                            />
+                          </div>
+                          <button 
+                            onClick={() => updateBodyweightSet(bwEx.id, set.id, 'completed', !set.completed)}
+                            className="w-12 h-10 flex items-center justify-center rounded-md hover:bg-surface transition-colors"
+                          >
+                            <div className={cn(
+                              "w-6 h-6 rounded-md flex items-center justify-center transition-all",
+                              set.completed ? "bg-primary text-black checkbox-animate" : "bg-surfaceHighlight border border-border text-transparent"
+                            )}>
+                              <Check className="w-4 h-4" strokeWidth={3} />
+                            </div>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-textMuted italic px-2">No sets added yet.</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {currentWorkout.exercises.map((exercise) => (
           <div key={exercise.id} className="card bg-surface/50">
             <div className="flex mb-4 gap-4">
@@ -223,18 +314,6 @@ export const Workout = () => {
               ))}
             </div>
             
-            {exercise.sets.some(s => s.completed) && (
-              <div className="mt-4 pt-4 border-t border-border/50 flex items-center justify-between">
-                <div className="text-center">
-                  <p className="text-xs font-bold text-textMuted uppercase tracking-widest mb-1">Volume</p>
-                  <p className="text-lg font-black text-white">{calculateExerciseStats(exercise).volume} kg</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-xs font-bold text-textMuted uppercase tracking-widest mb-1">Est 1RM</p>
-                  <p className="text-lg font-black text-primary">{calculateExerciseStats(exercise).e1rm} kg</p>
-                </div>
-              </div>
-            )}
           </div>
         ))}
 

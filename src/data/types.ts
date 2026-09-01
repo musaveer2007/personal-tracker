@@ -30,11 +30,24 @@ export interface WorkoutExercise {
   sets: WorkoutSet[];
 }
 
+export interface BodyweightSet {
+  id: string;
+  reps: number;
+  completed: boolean;
+}
+
+export interface BodyweightExercise {
+  id: string;
+  name: 'Pushups' | 'Pullups' | 'Squats';
+  sets: BodyweightSet[];
+}
+
 export interface Workout {
   id: string;
   date: string;
   name: string;
   exercises: WorkoutExercise[];
+  bodyweightExercises?: BodyweightExercise[];
   completed: boolean;
 }
 
