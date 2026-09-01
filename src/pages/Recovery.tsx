@@ -33,7 +33,6 @@ export const Recovery = () => {
 
   const [localSleep, setLocalSleep] = useState<SleepEntry>(currentSleep);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
 
   useEffect(() => {
@@ -65,7 +64,6 @@ export const Recovery = () => {
     setLocalSleep(newSleep);
     // Auto-save immediately to persist session
     updateSleep(newSleep.date, newSleep);
-    setShowConfirmDialog(false);
     setIsDirty(false);
   };
 
@@ -119,34 +117,7 @@ export const Recovery = () => {
     <div className="pb-24 animate-fade-in relative">
       <UnsavedDialog blocker={blocker} onSave={handleSave} onDiscard={handleDiscard} />
 
-      {showConfirmDialog && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-          <div className="bg-surface border border-border rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-slide-up text-center">
-            <h2 className="text-xl font-black text-white uppercase tracking-wider mb-2">READY FOR BED?</h2>
-            <p className="text-sm text-textMuted font-medium mb-6">Your sleep session will start now.</p>
-            <div className="mb-6 p-4 bg-surfaceHighlight border border-border rounded-xl">
-              <p className="text-xs font-bold text-textMuted tracking-widest uppercase mb-1">Bedtime</p>
-              <p className="text-2xl font-black text-white">{currentTime.toLocaleTimeString()}</p>
-            </div>
-            
-            <div className="space-y-3">
-              <button 
-                onClick={startSleepSession}
-                className="w-full btn-primary py-3 flex justify-center items-center font-bold tracking-widest uppercase"
-              >
-                START SLEEP
-              </button>
-              
-              <button 
-                onClick={() => setShowConfirmDialog(false)}
-                className="w-full py-3 bg-surfaceHighlight text-white border border-border rounded-lg font-bold tracking-widest uppercase hover:bg-border transition-colors"
-              >
-                CANCEL
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Removed the confirm dialog for ready to bed */}
 
       <div className="flex justify-between items-center mb-6">
         <div>
@@ -174,12 +145,15 @@ export const Recovery = () => {
                </div>
                <h3 className="text-2xl font-black text-white">READY TO BED</h3>
                <p className="text-textMuted font-medium text-sm mb-6">Record your exact sleep duration.</p>
-               <button 
-                 onClick={() => setShowConfirmDialog(true)}
-                 className="btn-primary w-full py-4 text-lg font-black tracking-widest uppercase"
-               >
-                 READY TO BED: OFF
-               </button>
+               <div className="flex items-center justify-between bg-surfaceHighlight border border-border rounded-xl p-4">
+                 <span className="text-lg font-black tracking-widest uppercase text-white">READY TO BED</span>
+                 <div 
+                   onClick={startSleepSession}
+                   className="w-16 h-8 bg-surface rounded-full p-1 cursor-pointer transition-colors border border-border"
+                 >
+                   <div className="w-6 h-6 bg-textMuted rounded-full transition-transform"></div>
+                 </div>
+               </div>
             </div>
           ) : localSleep.status === 'SLEEPING' ? (
             <div className="space-y-6 text-center py-6">
@@ -208,12 +182,15 @@ export const Recovery = () => {
                   <p className="text-4xl font-black text-white">{formatDuration(elapsedSeconds)}</p>
                </div>
 
-               <button 
-                 onClick={wakeUp}
-                 className="btn-primary w-full py-4 text-lg font-black tracking-widest uppercase bg-success text-black border-none hover:bg-success/80"
-               >
-                 I'M AWAKE
-               </button>
+               <div className="flex items-center justify-between bg-primary/20 border border-primary/50 rounded-xl p-4">
+                 <span className="text-lg font-black tracking-widest uppercase text-primary">I'M AWAKE</span>
+                 <div 
+                   onClick={wakeUp}
+                   className="w-16 h-8 bg-primary rounded-full p-1 cursor-pointer transition-colors border border-primary"
+                 >
+                   <div className="w-6 h-6 bg-black rounded-full transition-transform translate-x-8"></div>
+                 </div>
+               </div>
             </div>
           ) : (
             <div className="space-y-6 py-2">

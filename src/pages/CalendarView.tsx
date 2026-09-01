@@ -1,13 +1,15 @@
+import { useState } from 'react';
 import { useAppStore } from '../data/store';
 import { getChallengeStats, calculateDayStatus } from '../lib/dateUtils';
 import { cn } from '../lib/utils';
 import { addDays, parseISO, format } from 'date-fns';
-import { Check, X, Lock, Circle } from 'lucide-react';
+import { Check, X, Lock, Circle, Activity, Droplet, Moon, Utensils, Minus } from 'lucide-react';
 
 export const CalendarView = () => {
-  const { settings, taskCompletions, tasks } = useAppStore();
+  const { settings, taskCompletions, tasks, workouts, nutrition, sleep } = useAppStore();
   const stats = getChallengeStats(settings.startDate, settings.endDate);
   const startDate = parseISO(settings.startDate);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const days = Array.from({ length: 100 }, (_, i) => {
     const date = addDays(startDate, i);
@@ -38,23 +40,26 @@ export const CalendarView = () => {
             <div 
               key={d.day}
               title={`${d.dateDisplay} - ${d.completedCount}/${d.totalCount} Tasks`}
+              onClick={() => setSelectedDate(d.date)}
               className={cn(
-                "aspect-[3/4] rounded-lg flex flex-col items-center justify-between p-2 text-xs font-bold transition-all border group relative overflow-hidden",
-                d.status === 'completed' && "bg-success/20 text-success border-success/50",
-                d.status === 'failed' && "bg-red-500/10 text-red-500 border-red-500/30",
-                d.status === 'pending' && "bg-surfaceHighlight text-white border-border",
-                d.status === 'future' && "bg-surface text-textMuted border-transparent opacity-40"
+                "cursor-pointer aspect-[3/4] rounded-lg flex flex-col items-center justify-center p-2 text-xs font-bold transition-all border group relative overflow-hidden",
+                d.status === 'completed' && "bg-success/20 text-success border-success/50 hover:bg-success/30",
+                d.status === 'partial' && "bg-orange-500/10 text-orange-500 border-orange-500/50 hover:bg-orange-500/20",
+                d.status === 'failed' && "bg-red-500/10 text-red-500 border-red-500/30 hover:bg-red-500/20",
+                d.status === 'pending' && "bg-surfaceHighlight text-white border-border hover:border-primary/50",
+                d.status === 'future' && "bg-surface text-textMuted border-transparent opacity-40 hover:opacity-60"
               )}
             >
-              <span className="opacity-60 text-[10px] tracking-widest uppercase truncate w-full text-center">{format(parseISO(d.date), 'MMM d')}</span>
-              <span className="text-xl font-black">{d.day}</span>
-              
-              <div className="mt-1">
-                {d.status === 'completed' && <Check className="w-5 h-5 text-success drop-shadow-md" strokeWidth={3} />}
-                {d.status === 'failed' && <X className="w-5 h-5 text-red-500" strokeWidth={3} />}
-                {d.status === 'pending' && <Circle className="w-4 h-4 text-primary animate-pulse" strokeWidth={3} />}
-                {d.status === 'future' && <Lock className="w-4 h-4 text-textMuted" />}
+              <div className="absolute top-1 right-1">
+                {d.status === 'completed' && <Check className="w-4 h-4 text-success drop-shadow-md" strokeWidth={3} />}
+                {d.status === 'partial' && <Minus className="w-4 h-4 text-orange-500" strokeWidth={3} />}
+                {d.status === 'failed' && <X className="w-4 h-4 text-red-500" strokeWidth={3} />}
+                {d.status === 'pending' && <Circle className="w-3 h-3 text-primary animate-pulse" strokeWidth={3} />}
+                {d.status === 'future' && <Lock className="w-3 h-3 text-textMuted" />}
               </div>
+
+              <span className="opacity-60 text-[10px] tracking-widest uppercase truncate w-full text-center mt-2">{format(parseISO(d.date), 'MMM d')}</span>
+              <span className="text-xl font-black mt-1">{d.day}</span>
 
               {/* Progress bar line for partial / pending */}
               {(d.status === 'pending' || d.status === 'failed') && d.totalCount > 0 && d.completedCount > 0 && (
@@ -70,12 +75,16 @@ export const CalendarView = () => {
             <span>Completed</span>
           </div>
           <div className="flex items-center space-x-2">
+            <Minus className="w-4 h-4 text-orange-500" strokeWidth={3} />
+            <span>Partial</span>
+          </div>
+          <div className="flex items-center space-x-2">
             <X className="w-4 h-4 text-red-500" strokeWidth={3} />
-            <span>Failed</span>
+            <span>Missed</span>
           </div>
           <div className="flex items-center space-x-2">
             <Circle className="w-4 h-4 text-primary" strokeWidth={3} />
-            <span>Pending (Today)</span>
+            <span>Pending</span>
           </div>
           <div className="flex items-center space-x-2">
             <Lock className="w-4 h-4 text-textMuted" />
@@ -83,6 +92,72 @@ export const CalendarView = () => {
           </div>
         </div>
       </div>
+
+      {selectedDate && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedDate(null)}>
+          <div className="bg-surface border border-border rounded-2xl p-6 max-w-md w-full shadow-2xl animate-slide-up" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-black text-white uppercase tracking-wider">{format(parseISO(selectedDate), 'dd/MM/yyyy')}</h2>
+              <button onClick={() => setSelectedDate(null)} className="text-textMuted hover:text-white transition-colors">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-surfaceHighlight rounded-xl border border-border">
+                <div className="flex items-center space-x-3">
+                  <Activity className="w-5 h-5 text-primary" />
+                  <span className="font-bold tracking-widest uppercase text-sm">Workouts</span>
+                </div>
+                <span className="font-black text-white">
+                  {workouts.filter(w => w.date === selectedDate).length} session(s)
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-surfaceHighlight rounded-xl border border-border">
+                <div className="flex items-center space-x-3">
+                  <Utensils className="w-5 h-5 text-orange-500" />
+                  <span className="font-bold tracking-widest uppercase text-sm">Calories</span>
+                </div>
+                <span className="font-black text-white">
+                  {nutrition[selectedDate]?.calories || 0} kcal
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-surfaceHighlight rounded-xl border border-border">
+                <div className="flex items-center space-x-3">
+                  <Utensils className="w-5 h-5 text-red-500" />
+                  <span className="font-bold tracking-widest uppercase text-sm">Protein</span>
+                </div>
+                <span className="font-black text-white">
+                  {nutrition[selectedDate]?.protein || 0}g
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-surfaceHighlight rounded-xl border border-border">
+                <div className="flex items-center space-x-3">
+                  <Moon className="w-5 h-5 text-blue-400" />
+                  <span className="font-bold tracking-widest uppercase text-sm">Sleep</span>
+                </div>
+                <span className="font-black text-white">
+                  {sleep[selectedDate]?.hours || 0} hrs
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-surfaceHighlight rounded-xl border border-border">
+                <div className="flex items-center space-x-3">
+                  <Droplet className="w-5 h-5 text-blue-500" />
+                  <span className="font-bold tracking-widest uppercase text-sm">Water</span>
+                </div>
+                <span className="font-black text-white">
+                  {nutrition[selectedDate]?.water || 0} ml
+                </span>
+              </div>
+            </div>
+            
+          </div>
+        </div>
+      )}
     </div>
   );
 };

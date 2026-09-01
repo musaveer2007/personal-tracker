@@ -66,7 +66,7 @@ export const calculateDayStatus = (
   dateStr: string,
   tasks: Task[],
   taskCompletions: TaskCompletion[]
-): { status: 'completed' | 'failed' | 'pending' | 'future'; completedCount: number; totalCount: number } => {
+): { status: 'completed' | 'failed' | 'pending' | 'future' | 'partial'; completedCount: number; totalCount: number } => {
   const dateObj = parseISO(dateStr);
   const todayDateStr = getTodayStr();
   const todayObj = startOfDay(new Date());
@@ -81,17 +81,18 @@ export const calculateDayStatus = (
   const completedCount = taskCompletions.filter(tc => tc.date === dateStr && tc.completed).length;
   const totalCount = dayTasks.length;
 
-  let status: 'completed' | 'failed' | 'pending' | 'future' = 'future';
+  let status: 'completed' | 'failed' | 'pending' | 'future' | 'partial' = 'future';
   const isPast = isBefore(dateObj, todayObj);
   const isToday = dateStr === todayDateStr;
   const isCompleted = totalCount > 0 && completedCount === totalCount;
+  const isPartial = totalCount > 0 && completedCount > 0 && completedCount < totalCount;
 
   if (isAfter(dateObj, todayObj)) {
     status = 'future';
   } else if (isToday) {
     status = isCompleted ? 'completed' : 'pending';
   } else if (isPast) {
-    status = isCompleted ? 'completed' : 'failed';
+    status = isCompleted ? 'completed' : isPartial ? 'partial' : 'failed';
   }
 
   return { status, completedCount, totalCount };
@@ -111,7 +112,7 @@ export const calculateStreak = (tasks: Task[], taskCompletions: TaskCompletion[]
     
     if (status === 'completed') {
       streak++;
-    } else if (status === 'failed') {
+    } else if (status === 'failed' || status === 'partial') {
       // If we missed yesterday or earlier, streak is broken. 
       break; 
     }

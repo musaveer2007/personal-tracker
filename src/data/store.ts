@@ -134,31 +134,47 @@ export const useRootStore = create<RootState>()(
     }),
     {
       name: 'winter-arc-storage',
-      version: 3,
+      version: 4,
       migrate: (persistedState: any, version: number) => {
-        if (version === 0 || version === 1 || version === 2 || !persistedState.profiles) {
-          const old = persistedState;
-          return {
-            currentProfileId: old.currentProfileId || 'musaveer',
+        let state = persistedState;
+        
+        if (version < 3 || !state.profiles) {
+          state = {
+            currentProfileId: state.currentProfileId || 'musaveer',
             profiles: {
-              musaveer: old.profiles?.musaveer || {
-                settings: old.settings || defaultSettings,
-                tasks: old.tasks || defaultTasks,
-                taskCompletions: old.taskCompletions || [],
-                workouts: old.workouts || [],
-                runs: old.runs || [],
-                nutrition: old.nutrition || {},
-                measurements: old.measurements || [],
-                sleep: old.sleep || {},
-                journal: old.journal || {},
-                manualDayCompletions: old.manualDayCompletions || {},
+              musaveer: state.profiles?.musaveer || {
+                settings: state.settings || defaultSettings,
+                tasks: state.tasks || defaultTasks,
+                taskCompletions: state.taskCompletions || [],
+                workouts: state.workouts || [],
+                runs: state.runs || [],
+                nutrition: state.nutrition || {},
+                measurements: state.measurements || [],
+                sleep: state.sleep || {},
+                journal: state.journal || {},
+                manualDayCompletions: state.manualDayCompletions || {},
               },
-              dhavanesh: old.profiles?.dhavanesh || initialProfileData(dhavaneshSettings, dhavaneshTasks),
-              sumith: old.profiles?.sumith || initialProfileData(sumithSettings, sumithTasks),
+              dhavanesh: state.profiles?.dhavanesh || initialProfileData(dhavaneshSettings, dhavaneshTasks),
+              sumith: state.profiles?.sumith || initialProfileData(sumithSettings, sumithTasks),
             }
           };
         }
-        return persistedState;
+
+        if (version < 4) {
+          // Rename the sleep task
+          ['musaveer', 'dhavanesh', 'sumith'].forEach(profileId => {
+            if (state.profiles?.[profileId]?.tasks) {
+              state.profiles[profileId].tasks = state.profiles[profileId].tasks.map((t: any) => {
+                if (t.name.startsWith('Sleep ')) {
+                  return { ...t, name: 'Sleep by 10 - 10:30 PM' };
+                }
+                return t;
+              });
+            }
+          });
+        }
+        
+        return state;
       }
     }
   )

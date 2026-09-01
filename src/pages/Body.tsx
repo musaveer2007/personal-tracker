@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAppStore } from '../data/store';
 import { getWeekNumber } from '../lib/dateUtils';
-import { Save } from 'lucide-react';
+import { Save, ChevronDown } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useUnsavedChanges } from '../hooks/useUnsavedChanges';
 import { UnsavedDialog } from '../components/layout/UnsavedDialog';
@@ -10,7 +10,10 @@ import type { BodyMeasurement } from '../data/types';
 export const Body = () => {
   const { measurements, settings, addMeasurement } = useAppStore();
   const currentWeekNum = getWeekNumber(settings.startDate);
-  const weekId = `Week ${currentWeekNum}`;
+  const maxWeek = Math.max(currentWeekNum, 1);
+  const [selectedWeekNum, setSelectedWeekNum] = useState(currentWeekNum);
+  
+  const weekId = `Week ${selectedWeekNum}`;
   
   const currentMeasurement = measurements.find(m => m.date === weekId) || {
     date: weekId,
@@ -75,7 +78,27 @@ export const Body = () => {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-black tracking-tight text-white uppercase">BODY</h1>
-          <p className="text-textMuted font-medium tracking-wider text-sm mt-1 uppercase">WEEKLY TRACKING - {weekId}</p>
+          <div className="relative inline-block mt-1">
+            <select
+              value={selectedWeekNum}
+              onChange={(e) => {
+                if (isDirty) {
+                  if (confirm("You have unsaved changes. Discard?")) {
+                    setIsDirty(false);
+                    setSelectedWeekNum(Number(e.target.value));
+                  }
+                } else {
+                  setSelectedWeekNum(Number(e.target.value));
+                }
+              }}
+              className="appearance-none bg-transparent text-textMuted font-medium tracking-wider text-sm uppercase outline-none cursor-pointer pr-6"
+            >
+              {Array.from({ length: 15 }, (_, i) => i + 1).filter(w => w <= maxWeek).map(w => (
+                <option key={w} value={w} className="bg-surface text-white">WEEK {w}</option>
+              ))}
+            </select>
+            <ChevronDown className="w-4 h-4 text-textMuted absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
         </div>
         {isDirty && (
           <button onClick={handleSave} className="btn-primary flex items-center space-x-2">

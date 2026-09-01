@@ -28,7 +28,7 @@ export const defaultTasks: Task[] = [
   { id: uuidv4(), name: 'Morning skincare (Cleanser, Moisturizer, SPF)', category: 'grooming', frequency: 'daily' },
   { id: uuidv4(), name: 'Night skincare (Cleanser, Moisturizer)', category: 'grooming', frequency: 'daily' },
   { id: uuidv4(), name: 'Haircare (Shampoo)', category: 'grooming', frequency: 'specific_days', daysOfWeek: [1, 3, 5] }, // Mon, Wed, Fri
-  { id: uuidv4(), name: 'Sleep 7.5-9 hours', category: 'recovery', frequency: 'daily' },
+  { id: uuidv4(), name: 'Sleep by 10 - 10:30 PM', category: 'recovery', frequency: 'daily' },
 ];
 
 export const dhavaneshSettings: ChallengeSettings = {
@@ -56,7 +56,7 @@ export const dhavaneshTasks: Task[] = [
   { id: uuidv4(), name: 'Home Workout (Push/Pull/Legs)', category: 'fitness', frequency: 'specific_days', daysOfWeek: [1, 2, 4, 5, 6] }, // Mon, Tue, Thu, Fri, Sat
   { id: uuidv4(), name: 'Project/College Work (8:00 - 9:15 PM)', category: 'productivity', frequency: 'daily' },
   { id: uuidv4(), name: 'Prepare for tomorrow (9:15 PM)', category: 'grooming', frequency: 'daily' },
-  { id: uuidv4(), name: 'Sleep by 9:30 PM', category: 'recovery', frequency: 'daily' },
+  { id: uuidv4(), name: 'Sleep by 10 - 10:30 PM', category: 'recovery', frequency: 'daily' },
 ];
 
 export const sumithSettings: ChallengeSettings = {
@@ -86,5 +86,5 @@ export const sumithTasks: Task[] = [
   { id: uuidv4(), name: 'Morning skincare (Cleanser, Moisturizer, SPF)', category: 'grooming', frequency: 'daily' },
   { id: uuidv4(), name: 'Night skincare (Cleanser, Moisturizer)', category: 'grooming', frequency: 'daily' },
   { id: uuidv4(), name: 'Haircare (Shampoo)', category: 'grooming', frequency: 'specific_days', daysOfWeek: [1, 3, 5] }, // Mon, Wed, Fri
-  { id: uuidv4(), name: 'Sleep 7.5-9 hours', category: 'recovery', frequency: 'daily' },
+  { id: uuidv4(), name: 'Sleep by 10 - 10:30 PM', category: 'recovery', frequency: 'daily' },
 ];
