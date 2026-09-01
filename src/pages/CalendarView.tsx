@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAppStore, useRootStore } from '../data/store';
 import { getChallengeStats, calculateDayStatus } from '../lib/dateUtils';
 import { cn } from '../lib/utils';
-import { addDays, parseISO, format, isAfter, startOfToday } from 'date-fns';
+import { addDays, parseISO, format, isAfter, startOfToday, startOfDay } from 'date-fns';
 import { Check, X, Lock, Circle, Activity, Droplet, Moon, Utensils, Minus, BookOpen, Edit3 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
