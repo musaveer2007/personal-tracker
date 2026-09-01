@@ -46,3 +46,12 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #404040;
 }
+
+/* Hide scrollbar for mobile nav but allow scrolling */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}

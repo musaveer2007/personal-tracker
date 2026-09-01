@@ -141,8 +141,8 @@ export const AppShell = ({ children }: AppShellProps) => {
 
       {/* Mobile Bottom Nav */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface/90 backdrop-blur-md border-t border-border z-50">
-        <div className="flex items-center justify-around p-2">
-          {navItems.slice(0, 5).map((item) => {
+        <div className="flex items-center overflow-x-auto p-2 space-x-6 pb-2 no-scrollbar px-4">
+          {navItems.map((item) => {
             const Icon = item.icon;
             const fullPath = getFullPath(item.path);
             const isActive = location.pathname === fullPath || (item.path === 'command-center' && location.pathname === `/profile/${profileId}`);
@@ -152,7 +152,7 @@ export const AppShell = ({ children }: AppShellProps) => {
                 key={item.path}
                 to={fullPath}
                 className={cn(
-                  "flex flex-col items-center p-2 rounded-lg transition-colors",
+                  "flex flex-col items-center flex-shrink-0 transition-colors",
                   isActive ? "text-primary" : "text-textMuted"
                 )}
               >
@@ -161,6 +161,17 @@ export const AppShell = ({ children }: AppShellProps) => {
               </NavLink>
             );
           })}
+          
+          <NavLink
+            to={`/profile/${profileId}/settings`}
+            className={cn(
+              "flex flex-col items-center flex-shrink-0 transition-colors",
+              location.pathname === `/profile/${profileId}/settings` ? "text-primary" : "text-textMuted"
+            )}
+          >
+            <SettingsIcon className="w-6 h-6 mb-1" />
+            <span className="text-[10px] font-medium">Settings</span>
+          </NavLink>
         </div>
       </nav>
     </div>
