@@ -110,8 +110,6 @@ export const Nutrition = () => {
           </div>
         </div>
 
-        </div>
-
         {/* Food Library */}
         <div className="card space-y-4 md:col-span-2">
           <div className="flex justify-between items-center">
