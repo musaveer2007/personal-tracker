@@ -11,7 +11,7 @@ export const CalendarView = () => {
   const { currentProfileId } = useRootStore();
   const navigate = useNavigate();
   const stats = getChallengeStats(settings.startDate, settings.endDate);
-  const startDate = parseISO(settings.startDate);
+  const startDate = startOfDay(parseISO(settings.startDate));
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const getBodyweightStats = (date: string) => {
@@ -81,9 +81,9 @@ export const CalendarView = () => {
                 {d.status === 'future' && <Lock className="w-3 h-3 text-textMuted" />}
               </div>
 
-              {journal[d.date] && (
-                <div className="absolute top-1 left-1">
-                  <BookOpen className="w-3 h-3 text-primary" />
+              {journal[d.date] && journal[d.date].content && journal[d.date].content.trim().length > 0 && (
+                <div className="absolute top-1 left-1 z-10">
+                  <BookOpen className="w-3.5 h-3.5 text-primary drop-shadow-md" />
                 </div>
               )}
 
@@ -124,7 +124,7 @@ export const CalendarView = () => {
 
       {selectedDate && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedDate(null)}>
-          <div className="bg-surface border border-border rounded-2xl p-6 max-w-md w-full shadow-2xl animate-slide-up" onClick={e => e.stopPropagation()}>
+          <div className="bg-surface border border-border rounded-2xl p-6 max-w-md w-full shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto custom-scrollbar" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-black text-white uppercase tracking-wider">{format(parseISO(selectedDate), 'dd/MM/yyyy')}</h2>
               <button onClick={() => setSelectedDate(null)} className="text-textMuted hover:text-white transition-colors">

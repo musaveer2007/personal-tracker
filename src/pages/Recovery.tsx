@@ -93,6 +93,22 @@ export const Recovery = () => {
     setIsDirty(false); // Saved
   };
 
+  const resetSleep = () => {
+    const newSleep: SleepEntry = {
+      ...localSleep,
+      status: 'NOT_STARTED',
+      bedtimeTimestamp: undefined,
+      wakeTimestamp: undefined,
+      durationSeconds: undefined,
+      hours: 0,
+      energy: 3,
+      mood: 'average'
+    };
+    setLocalSleep(newSleep);
+    updateSleep(newSleep.date, newSleep);
+    setIsDirty(false);
+  };
+
   const handleChange = (field: keyof SleepEntry, value: any) => {
     setLocalSleep(prev => ({ ...prev, [field]: value }));
     setIsDirty(true);
@@ -156,7 +172,13 @@ export const Recovery = () => {
                </div>
             </div>
           ) : localSleep.status === 'SLEEPING' ? (
-            <div className="space-y-6 text-center py-6">
+             <div className="space-y-6 text-center py-6 relative">
+               <button 
+                 onClick={resetSleep}
+                 className="absolute top-0 right-0 text-xs font-bold text-textMuted hover:text-primary uppercase tracking-widest border border-border hover:border-primary/50 px-3 py-1.5 rounded-lg transition-colors"
+               >
+                 REDO
+               </button>
                <div className="w-20 h-20 bg-primary/20 border border-primary/50 rounded-full flex items-center justify-center mx-auto mb-4 text-primary animate-pulse">
                  <BedDouble className="w-8 h-8" />
                </div>
@@ -193,8 +215,16 @@ export const Recovery = () => {
                </div>
             </div>
           ) : (
-            <div className="space-y-6 py-2">
-               <h3 className="text-xl font-black text-white uppercase text-center mb-6">SLEEP COMPLETED</h3>
+             <div className="space-y-6 py-2">
+               <div className="flex items-center justify-between mb-6">
+                 <h3 className="text-xl font-black text-white uppercase text-center flex-1">SLEEP COMPLETED</h3>
+                 <button 
+                   onClick={resetSleep}
+                   className="text-xs font-bold text-textMuted hover:text-primary uppercase tracking-widest border border-border hover:border-primary/50 px-3 py-1.5 rounded-lg transition-colors"
+                 >
+                   REDO
+                 </button>
+               </div>
                <div className="grid grid-cols-2 gap-4 mb-4">
                   <div className="bg-surface border border-border rounded-xl p-4 text-center">
                     <Moon className="w-4 h-4 mx-auto text-textMuted mb-2" />
