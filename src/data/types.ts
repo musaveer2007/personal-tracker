@@ -102,6 +102,8 @@ export interface JournalEntry {
   mood: 'excellent' | 'good' | 'average' | 'tired' | 'difficult';
   content: string;
   energy: number; // 1-5
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface ChallengeSettings {

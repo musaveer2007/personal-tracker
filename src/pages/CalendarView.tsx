@@ -1,12 +1,15 @@
 import { useState } from 'react';
-import { useAppStore } from '../data/store';
+import { useAppStore, useRootStore } from '../data/store';
 import { getChallengeStats, calculateDayStatus } from '../lib/dateUtils';
 import { cn } from '../lib/utils';
-import { addDays, parseISO, format } from 'date-fns';
-import { Check, X, Lock, Circle, Activity, Droplet, Moon, Utensils, Minus } from 'lucide-react';
+import { addDays, parseISO, format, isAfter, startOfToday } from 'date-fns';
+import { Check, X, Lock, Circle, Activity, Droplet, Moon, Utensils, Minus, BookOpen, Edit3 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export const CalendarView = () => {
-  const { settings, taskCompletions, tasks, workouts, nutrition, sleep } = useAppStore();
+  const { settings, taskCompletions, tasks, workouts, nutrition, sleep, journal } = useAppStore();
+  const { currentProfileId } = useRootStore();
+  const navigate = useNavigate();
   const stats = getChallengeStats(settings.startDate, settings.endDate);
   const startDate = parseISO(settings.startDate);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -77,6 +80,12 @@ export const CalendarView = () => {
                 {d.status === 'pending' && <Circle className="w-3 h-3 text-primary animate-pulse" strokeWidth={3} />}
                 {d.status === 'future' && <Lock className="w-3 h-3 text-textMuted" />}
               </div>
+
+              {journal[d.date] && (
+                <div className="absolute top-1 left-1">
+                  <BookOpen className="w-3 h-3 text-primary" />
+                </div>
+              )}
 
               <span className="opacity-60 text-[10px] tracking-widest uppercase truncate w-full text-center mt-2">{format(parseISO(d.date), 'MMM d')}</span>
               <span className="text-xl font-black mt-1">{d.day}</span>
@@ -205,6 +214,52 @@ export const CalendarView = () => {
                 <span className="font-black text-white">
                   {nutrition[selectedDate]?.water || 0} ml
                 </span>
+              </div>
+
+              <div className="p-4 bg-surfaceHighlight rounded-xl border border-border space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <BookOpen className="w-5 h-5 text-primary" />
+                    <span className="font-bold tracking-widest uppercase text-sm">Journal</span>
+                  </div>
+                  {(!isAfter(parseISO(selectedDate), startOfToday()) || journal[selectedDate]) && (
+                    <button 
+                      onClick={() => navigate(`/profile/${currentProfileId}/journal?date=${selectedDate}`)}
+                      className="text-xs font-bold tracking-widest text-primary flex items-center space-x-1 hover:text-white transition-colors uppercase"
+                    >
+                      <Edit3 className="w-3 h-3" />
+                      <span>{journal[selectedDate] ? 'Edit' : 'Add'}</span>
+                    </button>
+                  )}
+                </div>
+                
+                {journal[selectedDate] ? (
+                  <div className="space-y-3">
+                    <div className="flex gap-4">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] text-textMuted font-bold uppercase tracking-widest">Mood</span>
+                        <span className="text-white font-medium capitalize">{journal[selectedDate].mood}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] text-textMuted font-bold uppercase tracking-widest">Energy</span>
+                        <span className="text-white font-medium">{journal[selectedDate].energy}/5</span>
+                      </div>
+                    </div>
+                    
+                    {journal[selectedDate].content && (
+                      <div className="mt-2">
+                        <span className="text-[10px] text-textMuted font-bold uppercase tracking-widest mb-1 block">Notes</span>
+                        <div className="text-sm text-white/80 whitespace-pre-wrap max-h-40 overflow-y-auto pr-2 custom-scrollbar border border-border/50 rounded-lg p-3 bg-surface">
+                          {journal[selectedDate].content}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-sm text-textMuted italic">
+                    No journal recorded for this day.
+                  </div>
+                )}
               </div>
             </div>
             

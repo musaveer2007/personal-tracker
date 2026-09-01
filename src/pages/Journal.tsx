@@ -2,14 +2,19 @@ import { useState, useEffect } from 'react';
 import { useAppStore } from '../data/store';
 import { getTodayStr } from '../lib/dateUtils';
 import type { JournalEntry } from '../data/types';
-import { Save } from 'lucide-react';
+import { Save, ArrowLeft } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useUnsavedChanges } from '../hooks/useUnsavedChanges';
 import { UnsavedDialog } from '../components/layout/UnsavedDialog';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { format, parseISO } from 'date-fns';
 
 export const Journal = () => {
   const { journal, updateJournal } = useAppStore();
-  const today = getTodayStr();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const dateParam = searchParams.get('date');
+  const today = dateParam || getTodayStr();
 
   const currentJournal = journal[today] || {
     date: today,
@@ -22,7 +27,14 @@ export const Journal = () => {
   const [isDirty, setIsDirty] = useState(false);
   
   const handleSave = () => {
-    updateJournal(today, localJournal);
+    const now = new Date().toISOString();
+    const updatedJournal = {
+      ...localJournal,
+      createdAt: localJournal.createdAt || now,
+      updatedAt: now
+    };
+    updateJournal(today, updatedJournal);
+    setLocalJournal(updatedJournal);
     setIsDirty(false);
     return true;
   };
@@ -56,9 +68,18 @@ export const Journal = () => {
     <div className="pb-24 animate-fade-in relative">
       <UnsavedDialog blocker={blocker} onSave={handleSave} onDiscard={handleDiscard} />
       <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-black tracking-tight text-white uppercase">JOURNAL</h1>
-          <p className="text-primary font-bold tracking-widest text-sm mt-1 uppercase">THE MIND</p>
+        <div className="flex items-center gap-4">
+          {dateParam && (
+            <button onClick={() => navigate(-1)} className="p-2 bg-surfaceHighlight rounded-full text-textMuted hover:text-white transition-colors">
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+          )}
+          <div>
+            <h1 className="text-3xl font-black tracking-tight text-white uppercase">JOURNAL</h1>
+            <p className="text-primary font-bold tracking-widest text-sm mt-1 uppercase">
+              {dateParam ? format(parseISO(today), 'MMM d, yyyy') : 'THE MIND'}
+            </p>
+          </div>
         </div>
         <button 
           onClick={handleSave} 
