@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { supabase } from '../lib/supabase';
 import type { AppState, RootState, ProfileData } from './types';
 import { defaultSettings, defaultTasks, dhavaneshSettings, dhavaneshTasks } from './seed';
 
@@ -213,3 +214,69 @@ export function useAppStore<T>(selector?: (state: AppState) => T) {
   };
   return selector ? selector(appState) : appState;
 }
+
+// ----------------------------------------------------------------------
+// Supabase Real-time Sync Logic
+// ----------------------------------------------------------------------
+
+let isSyncingFromServer = false;
+
+// 1. Initial Load from Supabase
+supabase.from('winter_arc_profiles').select('*').then(({ data, error }) => {
+  if (error) {
+    console.error('Error fetching initial data from Supabase:', error);
+    return;
+  }
+  if (data && data.length > 0) {
+    isSyncingFromServer = true;
+    const profilesUpdate: Record<string, any> = {};
+    data.forEach(row => {
+      profilesUpdate[row.id] = row.data;
+    });
+    
+    useRootStore.setState((state) => ({
+      profiles: {
+        ...state.profiles,
+        ...profilesUpdate
+      }
+    }));
+    setTimeout(() => { isSyncingFromServer = false; }, 100);
+  }
+});
+
+// 2. Listen to Remote Changes
+supabase
+  .channel('winter_arc_profiles_changes')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'winter_arc_profiles' }, (payload) => {
+    if (payload.new && (payload.new as any).id) {
+      isSyncingFromServer = true;
+      const { id, data } = payload.new as any;
+      useRootStore.setState((state) => ({
+        profiles: {
+          ...state.profiles,
+          [id]: data
+        }
+      }));
+      setTimeout(() => { isSyncingFromServer = false; }, 100);
+    }
+  })
+  .subscribe();
+
+// 3. Push Local Changes
+useRootStore.subscribe((state, prevState) => {
+  if (isSyncingFromServer) return;
+  
+  // Find which profile changed
+  Object.keys(state.profiles).forEach((id) => {
+    if (state.profiles[id] !== prevState.profiles[id]) {
+      // Profile data changed, push to supabase
+      supabase.from('winter_arc_profiles').upsert({
+        id: id,
+        data: state.profiles[id],
+        updated_at: new Date().toISOString()
+      }).then(({ error }) => {
+        if (error) console.error("Error syncing to Supabase", error);
+      });
+    }
+  });
+});
