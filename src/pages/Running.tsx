@@ -5,10 +5,14 @@ import type { Run } from '../data/types';
 import { v4 as uuidv4 } from 'uuid';
 import { Activity, Save, Clock, Flame, Navigation, TrendingUp } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { useUnsavedChanges } from '../hooks/useUnsavedChanges';
+import { UnsavedDialog } from '../components/layout/UnsavedDialog';
 
 export const Running = () => {
   const { runs, saveRun } = useAppStore();
   const today = getTodayStr();
+
+  const existingRun = runs.find(r => r.date === today);
 
   const [currentRun, setCurrentRun] = useState<Run>({
     id: uuidv4(),
@@ -20,16 +24,41 @@ export const Running = () => {
     type: 'Base Run'
   });
 
-  useEffect(() => {
-    const existing = runs.find(r => r.date === today);
-    if (existing) {
-      setCurrentRun(existing);
-    }
-  }, [runs, today]);
+  const [isDirty, setIsDirty] = useState(false);
 
   const handleSave = () => {
     saveRun(currentRun);
+    setIsDirty(false);
+    return true;
   };
+
+  const handleDiscard = () => {
+    if (existingRun) {
+      setCurrentRun(existingRun);
+    } else {
+      setCurrentRun({
+        id: uuidv4(),
+        date: today,
+        distance: 0,
+        time: 0,
+        pace: '',
+        calories: 0,
+        type: 'Base Run'
+      });
+    }
+    setIsDirty(false);
+  };
+
+  const { blocker } = useUnsavedChanges(isDirty, handleSave, handleDiscard);
+
+  useEffect(() => {
+    if (existingRun) {
+      setCurrentRun(existingRun);
+      setIsDirty(false);
+    }
+  }, [existingRun]);
+
+
 
   const calculatePace = (dist: number, time: number) => {
     if (!dist || !time) return '';
@@ -45,20 +74,26 @@ export const Running = () => {
       updated.pace = calculatePace(Number(updated.distance), Number(updated.time));
     }
     setCurrentRun(updated);
+    setIsDirty(true);
   };
 
   const historyRuns = [...runs].sort((a, b) => b.date.localeCompare(a.date)).filter(r => r.date !== today);
 
   return (
-    <div className="pb-24 animate-fade-in">
+    <div className="pb-24 animate-fade-in relative">
+      <UnsavedDialog blocker={blocker} onSave={handleSave} onDiscard={handleDiscard} />
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-black tracking-tight text-white uppercase">RUNNING</h1>
           <p className="text-primary font-bold tracking-widest text-sm mt-1 uppercase">CONDITIONING</p>
         </div>
-        <button onClick={handleSave} className="btn-primary flex items-center space-x-2">
+        <button 
+          onClick={handleSave} 
+          disabled={!isDirty}
+          className={`flex items-center space-x-2 ${isDirty ? 'btn-primary' : 'bg-surfaceHighlight text-textMuted px-6 py-3 rounded-xl font-bold opacity-50 cursor-not-allowed'}`}
+        >
           <Save className="w-4 h-4" />
-          <span>Save</span>
+          <span>{isDirty ? 'Save' : 'Saved'}</span>
         </button>
       </div>
 

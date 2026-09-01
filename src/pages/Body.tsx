@@ -1,15 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAppStore } from '../data/store';
-import { getTodayStr } from '../lib/dateUtils';
+import { getWeekNumber } from '../lib/dateUtils';
 import { Save } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { useUnsavedChanges } from '../hooks/useUnsavedChanges';
+import { UnsavedDialog } from '../components/layout/UnsavedDialog';
+import type { BodyMeasurement } from '../data/types';
 
 export const Body = () => {
   const { measurements, settings, addMeasurement } = useAppStore();
-  const today = getTodayStr();
+  const currentWeekNum = getWeekNumber(settings.startDate);
+  const weekId = `Week ${currentWeekNum}`;
   
-  const currentMeasurement = measurements.find(m => m.date === today) || {
-    date: today,
+  const currentMeasurement = measurements.find(m => m.date === weekId) || {
+    date: weekId,
     weight: settings.startingWeight || 0,
     chest: 0,
     waist: 0,
@@ -17,29 +21,68 @@ export const Body = () => {
     rightArm: 0,
     thigh: 0,
     shoulders: 0
-  };
+  } as BodyMeasurement;
 
-  const [localM, setLocalM] = useState(currentMeasurement);
+  const [localM, setLocalM] = useState<BodyMeasurement>(currentMeasurement);
+  const [isDirty, setIsDirty] = useState(false);
+
+  // If the week changes while we're on the page (unlikely but possible), reset
+  useEffect(() => {
+    if (!isDirty && localM.date !== weekId) {
+       const m = measurements.find(m => m.date === weekId) || {
+         date: weekId,
+         weight: settings.startingWeight || 0,
+         chest: 0, waist: 0, leftArm: 0, rightArm: 0, thigh: 0, shoulders: 0
+       } as BodyMeasurement;
+       setLocalM(m);
+    }
+  }, [weekId, measurements, isDirty, localM.date, settings.startingWeight]);
 
   const handleSave = () => {
     addMeasurement(localM);
+    setIsDirty(false);
+    return true;
   };
 
-  const sortedMeasurements = [...measurements].sort((a, b) => a.date.localeCompare(b.date));
+  const handleDiscard = () => {
+    setLocalM(currentMeasurement);
+    setIsDirty(false);
+  };
+
+  const { blocker } = useUnsavedChanges(isDirty, handleSave, handleDiscard);
+
+  const handleChange = (field: keyof BodyMeasurement, value: number) => {
+    setLocalM((prev: BodyMeasurement) => ({ ...prev, [field]: value }));
+    setIsDirty(true);
+  };
+
+  // Sort measurements by week number for chart
+  const sortedMeasurements = [...measurements]
+    .filter(m => m.date.startsWith('Week '))
+    .sort((a, b) => {
+      const aNum = parseInt(a.date.replace('Week ', '')) || 0;
+      const bNum = parseInt(b.date.replace('Week ', '')) || 0;
+      return aNum - bNum;
+    });
+
   const currentWeight = sortedMeasurements.length > 0 ? sortedMeasurements[sortedMeasurements.length - 1].weight : settings.startingWeight;
   const change = currentWeight - settings.startingWeight;
 
   return (
-    <div className="pb-24 animate-fade-in">
+    <div className="pb-24 animate-fade-in relative">
+      <UnsavedDialog blocker={blocker} onSave={handleSave} onDiscard={handleDiscard} />
+
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-black tracking-tight text-white uppercase">BODY</h1>
-          <p className="text-textMuted font-medium tracking-wider text-sm mt-1 uppercase">TRACK YOUR PHYSIQUE</p>
+          <p className="text-textMuted font-medium tracking-wider text-sm mt-1 uppercase">WEEKLY TRACKING - {weekId}</p>
         </div>
-        <button onClick={handleSave} className="btn-primary flex items-center space-x-2">
-          <Save className="w-4 h-4" />
-          <span>Save</span>
-        </button>
+        {isDirty && (
+          <button onClick={handleSave} className="btn-primary flex items-center space-x-2">
+            <Save className="w-4 h-4" />
+            <span>Save</span>
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
@@ -73,7 +116,6 @@ export const Body = () => {
                     dataKey="date" 
                     stroke="#a3a3a3" 
                     fontSize={10} 
-                    tickFormatter={(val) => new Date(val).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     axisLine={false}
                     tickLine={false}
                   />
@@ -102,22 +144,22 @@ export const Body = () => {
               </ResponsiveContainer>
             ) : (
               <div className="h-full flex items-center justify-center border border-dashed border-border rounded-xl">
-                <p className="text-sm text-textMuted uppercase font-bold tracking-widest">MORE DATA NEEDED FOR CHART</p>
+                <p className="text-sm text-textMuted uppercase font-bold tracking-widest text-center">MORE DATA NEEDED FOR CHART<br/>(Track 2+ Weeks)</p>
               </div>
             )}
           </div>
           
-          {change > -0.5 && change < 0.5 && sortedMeasurements.length > 7 && (
+          {change > -0.5 && change < 0.5 && sortedMeasurements.length > 3 && (
             <div className="bg-primary/10 border border-primary/20 p-4 rounded-lg">
               <h3 className="text-xs font-bold text-primary tracking-widest uppercase mb-1">SMART INSIGHT</h3>
-              <p className="text-sm text-textMain font-medium">Your average weight has remained stable recently. Consider reviewing your calorie intake if you are trying to change weight.</p>
+              <p className="text-sm text-textMain font-medium">Your average weight has remained stable over the last few weeks. Consider reviewing your calorie intake if you are trying to change weight.</p>
             </div>
           )}
         </div>
 
         {/* Measurements Entry */}
         <div className="card space-y-6">
-          <h2 className="text-sm font-bold tracking-widest text-textMuted uppercase">TODAY'S MEASUREMENTS (cm)</h2>
+          <h2 className="text-sm font-bold tracking-widest text-textMuted uppercase">{weekId} MEASUREMENTS (cm)</h2>
           
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -125,7 +167,7 @@ export const Body = () => {
               <input 
                 type="number" step="0.1"
                 value={localM.weight || ''}
-                onChange={e => setLocalM({...localM, weight: Number(e.target.value)})}
+                onChange={e => handleChange('weight', Number(e.target.value))}
                 className="w-24 bg-surfaceHighlight border border-border rounded-md p-2 text-right focus:outline-none focus:border-primary font-bold text-white"
               />
             </div>
@@ -134,7 +176,7 @@ export const Body = () => {
               <input 
                 type="number" step="0.1"
                 value={localM.chest || ''}
-                onChange={e => setLocalM({...localM, chest: Number(e.target.value)})}
+                onChange={e => handleChange('chest', Number(e.target.value))}
                 className="w-24 bg-surfaceHighlight border border-border rounded-md p-2 text-right focus:outline-none focus:border-primary font-bold text-white"
               />
             </div>
@@ -143,7 +185,7 @@ export const Body = () => {
               <input 
                 type="number" step="0.1"
                 value={localM.waist || ''}
-                onChange={e => setLocalM({...localM, waist: Number(e.target.value)})}
+                onChange={e => handleChange('waist', Number(e.target.value))}
                 className="w-24 bg-surfaceHighlight border border-border rounded-md p-2 text-right focus:outline-none focus:border-primary font-bold text-white"
               />
             </div>
@@ -152,7 +194,7 @@ export const Body = () => {
               <input 
                 type="number" step="0.1"
                 value={localM.shoulders || ''}
-                onChange={e => setLocalM({...localM, shoulders: Number(e.target.value)})}
+                onChange={e => handleChange('shoulders', Number(e.target.value))}
                 className="w-24 bg-surfaceHighlight border border-border rounded-md p-2 text-right focus:outline-none focus:border-primary font-bold text-white"
               />
             </div>
@@ -162,13 +204,13 @@ export const Body = () => {
                 <input 
                   type="number" step="0.1" placeholder="L"
                   value={localM.leftArm || ''}
-                  onChange={e => setLocalM({...localM, leftArm: Number(e.target.value)})}
+                  onChange={e => handleChange('leftArm', Number(e.target.value))}
                   className="w-16 bg-surfaceHighlight border border-border rounded-md p-2 text-right focus:outline-none focus:border-primary font-bold text-white"
                 />
                 <input 
                   type="number" step="0.1" placeholder="R"
                   value={localM.rightArm || ''}
-                  onChange={e => setLocalM({...localM, rightArm: Number(e.target.value)})}
+                  onChange={e => handleChange('rightArm', Number(e.target.value))}
                   className="w-16 bg-surfaceHighlight border border-border rounded-md p-2 text-right focus:outline-none focus:border-primary font-bold text-white"
                 />
               </div>
@@ -178,7 +220,7 @@ export const Body = () => {
               <input 
                 type="number" step="0.1"
                 value={localM.thigh || ''}
-                onChange={e => setLocalM({...localM, thigh: Number(e.target.value)})}
+                onChange={e => handleChange('thigh', Number(e.target.value))}
                 className="w-24 bg-surfaceHighlight border border-border rounded-md p-2 text-right focus:outline-none focus:border-primary font-bold text-white"
               />
             </div>

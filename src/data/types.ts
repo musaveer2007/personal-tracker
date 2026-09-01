@@ -76,6 +76,12 @@ export interface SleepEntry {
   wakeTime?: string;
   energy?: number; // 1-5
   mood?: 'excellent' | 'good' | 'average' | 'tired' | 'difficult';
+  
+  // V3 Upgrades
+  status?: 'NOT_STARTED' | 'READY_TO_BED' | 'SLEEPING' | 'AWAKE' | 'COMPLETED';
+  bedtimeTimestamp?: string; // ISO string
+  wakeTimestamp?: string;    // ISO string
+  durationSeconds?: number;
 }
 
 export interface JournalEntry {

@@ -5,6 +5,8 @@ import type { Workout as WorkoutType, WorkoutExercise } from '../data/types';
 import { v4 as uuidv4 } from 'uuid';
 import { Plus, Check, Save } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { useUnsavedChanges } from '../hooks/useUnsavedChanges';
+import { UnsavedDialog } from '../components/layout/UnsavedDialog';
 
 const WORKOUT_SCHEDULE: Record<number, string> = {
   1: 'Chest + Shoulders + Triceps',
@@ -28,7 +30,6 @@ export const Workout = () => {
     for (let i = pastWorkouts.length - 1; i >= 0; i--) {
       const ex = pastWorkouts[i].exercises.find(e => e.name.toLowerCase() === exerciseName.toLowerCase());
       if (ex && ex.sets.some(s => s.completed)) {
-        // Find best set (highest weight)
         const bestSet = ex.sets.reduce((best, current) => {
           if (!current.completed) return best;
           return (current.weight > best.weight) ? current : best;
@@ -53,21 +54,40 @@ export const Workout = () => {
   };
 
   const [currentWorkout, setCurrentWorkout] = useState<WorkoutType | null>(null);
+  const [isDirty, setIsDirty] = useState(false);
+  const [originalWorkout, setOriginalWorkout] = useState<WorkoutType | null>(null);
 
   useEffect(() => {
     const existing = workouts.find(w => w.date === today);
-    if (existing) {
-      setCurrentWorkout(existing);
-    } else {
-      setCurrentWorkout({
-        id: uuidv4(),
-        date: today,
-        name: expectedWorkoutName,
-        exercises: [],
-        completed: false,
-      });
+    const initial = existing || {
+      id: uuidv4(),
+      date: today,
+      name: expectedWorkoutName,
+      exercises: [],
+      completed: false,
+    };
+    if (!isDirty && (!currentWorkout || currentWorkout.date !== today)) {
+       setCurrentWorkout(initial);
+       setOriginalWorkout(initial);
     }
-  }, [workouts, today, expectedWorkoutName]);
+  }, [workouts, today, expectedWorkoutName, isDirty, currentWorkout]);
+
+  const handleSave = () => {
+    if (currentWorkout) {
+      saveWorkout(currentWorkout);
+      setOriginalWorkout(currentWorkout);
+      setIsDirty(false);
+      return true;
+    }
+    return false;
+  };
+
+  const handleDiscard = () => {
+    setCurrentWorkout(originalWorkout);
+    setIsDirty(false);
+  };
+
+  const { blocker } = useUnsavedChanges(isDirty, handleSave, handleDiscard);
 
   const addExercise = () => {
     if (!currentWorkout) return;
@@ -80,6 +100,7 @@ export const Workout = () => {
     };
     const updated = { ...currentWorkout, exercises: [...currentWorkout.exercises, newExercise] };
     setCurrentWorkout(updated);
+    setIsDirty(true);
   };
 
   const updateExercise = (exerciseId: string, field: string, value: any) => {
@@ -91,6 +112,7 @@ export const Workout = () => {
       )
     };
     setCurrentWorkout(updated);
+    setIsDirty(true);
   };
 
   const updateSet = (exerciseId: string, setId: string, field: string, value: any) => {
@@ -108,27 +130,26 @@ export const Workout = () => {
       })
     };
     setCurrentWorkout(updated);
-  };
-
-  const save = () => {
-    if (currentWorkout) {
-      saveWorkout(currentWorkout);
-    }
+    setIsDirty(true);
   };
 
   if (!currentWorkout) return null;
 
   return (
-    <div className="pb-24 animate-fade-in">
+    <div className="pb-24 animate-fade-in relative">
+      <UnsavedDialog blocker={blocker} onSave={handleSave} onDiscard={handleDiscard} />
+
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-black tracking-tight text-white uppercase">WORKOUT</h1>
           <p className="text-primary font-bold tracking-widest text-sm mt-1 uppercase">{currentWorkout.name}</p>
         </div>
-        <button onClick={save} className="btn-primary flex items-center space-x-2">
-          <Save className="w-4 h-4" />
-          <span>Save</span>
-        </button>
+        {isDirty && (
+          <button onClick={handleSave} className="btn-primary flex items-center space-x-2">
+            <Save className="w-4 h-4" />
+            <span>Save</span>
+          </button>
+        )}
       </div>
 
       <div className="space-y-8">

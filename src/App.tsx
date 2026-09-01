@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Routes, Route, Navigate } from 'react-router-dom';
 import { AppShell } from './components/layout/AppShell';
 
 import { Home } from './pages/Home';
@@ -18,39 +18,48 @@ import { Journal } from './pages/Journal';
 import { Achievements } from './pages/Achievements';
 import { Settings } from './pages/Settings';
 
-function App() {
+function AppShellWrapper() {
   return (
-    <BrowserRouter>
+    <AppShell>
       <Routes>
-        <Route path="/" element={<Home />} />
-        
-        <Route path="/profile/:profileId/*" element={
-          <AppShell>
-            <Routes>
-              <Route path="/" element={<Navigate to="command-center" replace />} />
-              <Route path="command-center" element={<CommandCenter />} />
-              <Route path="today" element={<Today />} />
-              <Route path="workout" element={<Workout />} />
-              <Route path="running" element={<Running />} />
-              <Route path="nutrition" element={<Nutrition />} />
-              <Route path="water" element={<Water />} />
-              <Route path="body" element={<Body />} />
-              <Route path="recovery" element={<Recovery />} />
-              <Route path="skincare" element={<Skincare />} />
-              <Route path="haircare" element={<Haircare />} />
-              <Route path="progress" element={<Progress />} />
-              <Route path="calendar" element={<CalendarView />} />
-              <Route path="journal" element={<Journal />} />
-              <Route path="achievements" element={<Achievements />} />
-              <Route path="settings" element={<Settings />} />
-            </Routes>
-          </AppShell>
-        } />
-        
-        <Route path="/settings" element={<Settings />} />
+        <Route path="/" element={<Navigate to="command-center" replace />} />
+        <Route path="command-center" element={<CommandCenter />} />
+        <Route path="today" element={<Today />} />
+        <Route path="workout" element={<Workout />} />
+        <Route path="running" element={<Running />} />
+        <Route path="nutrition" element={<Nutrition />} />
+        <Route path="water" element={<Water />} />
+        <Route path="body" element={<Body />} />
+        <Route path="recovery" element={<Recovery />} />
+        <Route path="skincare" element={<Skincare />} />
+        <Route path="haircare" element={<Haircare />} />
+        <Route path="progress" element={<Progress />} />
+        <Route path="calendar" element={<CalendarView />} />
+        <Route path="journal" element={<Journal />} />
+        <Route path="achievements" element={<Achievements />} />
+        <Route path="settings" element={<Settings />} />
       </Routes>
-    </BrowserRouter>
+    </AppShell>
   );
+}
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Home />,
+  },
+  {
+    path: "/profile/:profileId/*",
+    element: <AppShellWrapper />,
+  },
+  {
+    path: "/settings",
+    element: <Settings />,
+  }
+]);
+
+function App() {
+  return <RouterProvider router={router} />;
 }
 
 export default App;

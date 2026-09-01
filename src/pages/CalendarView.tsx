@@ -1,10 +1,11 @@
 import { useAppStore } from '../data/store';
-import { getChallengeStats } from '../lib/dateUtils';
+import { getChallengeStats, calculateDayStatus } from '../lib/dateUtils';
 import { cn } from '../lib/utils';
 import { addDays, parseISO, format } from 'date-fns';
+import { Check, X, Lock, Circle } from 'lucide-react';
 
 export const CalendarView = () => {
-  const { settings, taskCompletions, tasks, manualDayCompletions, toggleManualDayCompletion } = useAppStore();
+  const { settings, taskCompletions, tasks } = useAppStore();
   const stats = getChallengeStats(settings.startDate, settings.endDate);
   const startDate = parseISO(settings.startDate);
 
@@ -12,38 +13,15 @@ export const CalendarView = () => {
     const date = addDays(startDate, i);
     const dateStr = format(date, 'yyyy-MM-dd');
     
-    // Calculate completion for this specific day
-    const dayOfWeek = date.getDay();
-    const dayTasks = tasks.filter(t => {
-      if (t.frequency === 'daily') return true;
-      if (t.frequency === 'specific_days' && t.daysOfWeek?.includes(dayOfWeek)) return true;
-      return false;
-    });
-
-    const completed = taskCompletions.filter(tc => tc.date === dateStr && tc.completed).length;
-    const total = dayTasks.length;
-    
-    let status = 'future';
-    
-    // Manual override check
-    if (manualDayCompletions && manualDayCompletions[dateStr]) {
-      status = 'completed';
-    } else {
-      if (i < stats.daysCompleted) {
-        if (total === 0) status = 'completed';
-        else if (completed === total) status = 'completed';
-        else if (completed > 0) status = 'partial';
-        else status = 'missed';
-      } else if (i === stats.daysCompleted && stats.status === 'active') {
-        if (total > 0 && completed === total) status = 'completed';
-        else status = 'today';
-      }
-    }
+    const { status, completedCount, totalCount } = calculateDayStatus(dateStr, tasks, taskCompletions);
 
     return {
       day: i + 1,
       date: dateStr,
-      status
+      dateDisplay: format(date, 'EEE MMM d'),
+      status,
+      completedCount,
+      totalCount
     };
   });
 
@@ -51,46 +29,57 @@ export const CalendarView = () => {
     <div className="pb-24 animate-fade-in">
       <div className="mb-6">
         <h1 className="text-3xl font-black tracking-tight text-white uppercase">CALENDAR</h1>
-        <p className="text-primary font-bold tracking-widest text-sm mt-1 uppercase">100 DAYS</p>
+        <p className="text-primary font-bold tracking-widest text-sm mt-1 uppercase">DAY {stats.currentDay > 100 ? 100 : stats.currentDay} / 100</p>
       </div>
 
-      <div className="card">
-        <div className="grid grid-cols-7 gap-2 md:gap-3">
+      <div className="card mb-8">
+        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-7 gap-3">
           {days.map(d => (
             <div 
               key={d.day}
-              onClick={() => toggleManualDayCompletion(d.date)}
-              title={`Day ${d.day} - ${d.date}`}
+              title={`${d.dateDisplay} - ${d.completedCount}/${d.totalCount} Tasks`}
               className={cn(
-                "aspect-square rounded-md flex items-center justify-center text-xs font-bold transition-all border cursor-pointer hover:scale-105 active:scale-95",
-                d.status === 'completed' && "bg-primary text-black border-primary",
-                d.status === 'partial' && "bg-primary/20 text-primary border-primary/50",
-                d.status === 'missed' && "bg-surfaceHighlight text-textMuted border-border",
-                d.status === 'today' && "bg-surface text-white border-primary border-2",
-                d.status === 'future' && "bg-surface text-textMuted border-border opacity-50"
+                "aspect-[3/4] rounded-lg flex flex-col items-center justify-between p-2 text-xs font-bold transition-all border group relative overflow-hidden",
+                d.status === 'completed' && "bg-success/20 text-success border-success/50",
+                d.status === 'failed' && "bg-red-500/10 text-red-500 border-red-500/30",
+                d.status === 'pending' && "bg-surfaceHighlight text-white border-border",
+                d.status === 'future' && "bg-surface text-textMuted border-transparent opacity-40"
               )}
             >
-              {d.day}
+              <span className="opacity-60 text-[10px] tracking-widest uppercase truncate w-full text-center">{format(parseISO(d.date), 'MMM d')}</span>
+              <span className="text-xl font-black">{d.day}</span>
+              
+              <div className="mt-1">
+                {d.status === 'completed' && <Check className="w-5 h-5 text-success drop-shadow-md" strokeWidth={3} />}
+                {d.status === 'failed' && <X className="w-5 h-5 text-red-500" strokeWidth={3} />}
+                {d.status === 'pending' && <Circle className="w-4 h-4 text-primary animate-pulse" strokeWidth={3} />}
+                {d.status === 'future' && <Lock className="w-4 h-4 text-textMuted" />}
+              </div>
+
+              {/* Progress bar line for partial / pending */}
+              {(d.status === 'pending' || d.status === 'failed') && d.totalCount > 0 && d.completedCount > 0 && (
+                <div className="absolute bottom-0 left-0 h-1 bg-primary" style={{ width: `${(d.completedCount / d.totalCount) * 100}%` }}></div>
+              )}
             </div>
           ))}
         </div>
         
         <div className="mt-8 flex flex-wrap gap-4 justify-center text-xs font-bold tracking-widest text-textMuted uppercase">
           <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 rounded-sm bg-primary border border-primary"></div>
-            <span>Complete</span>
+            <Check className="w-4 h-4 text-success" strokeWidth={3} />
+            <span>Completed</span>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 rounded-sm bg-primary/20 border border-primary/50"></div>
-            <span>Partial</span>
+            <X className="w-4 h-4 text-red-500" strokeWidth={3} />
+            <span>Failed</span>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 rounded-sm bg-surfaceHighlight border border-border"></div>
-            <span>Missed</span>
+            <Circle className="w-4 h-4 text-primary" strokeWidth={3} />
+            <span>Pending (Today)</span>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 rounded-sm bg-surface border-2 border-primary"></div>
-            <span>Today</span>
+            <Lock className="w-4 h-4 text-textMuted" />
+            <span>Future</span>
           </div>
         </div>
       </div>

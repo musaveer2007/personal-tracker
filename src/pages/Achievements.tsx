@@ -4,9 +4,9 @@ import { Trophy, CheckCircle, Lock } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export const Achievements = () => {
-  const { settings, workouts, runs, manualDayCompletions } = useAppStore();
+  const { settings, workouts, runs, manualDayCompletions, tasks, taskCompletions } = useAppStore();
   const stats = getChallengeStats(settings.startDate, settings.endDate);
-  const currentStreak = calculateStreak(manualDayCompletions);
+  const currentStreak = calculateStreak(tasks, taskCompletions);
   
   // Calculate specific metrics
   const totalWorkouts = workouts.filter(w => w.completed || w.exercises.some(e => e.sets.some(s => s.completed))).length;

@@ -1,53 +1,36 @@
 import { useAppStore } from '../../data/store';
-import { getTodayStr } from '../../lib/dateUtils';
+import { getTodayStr, calculateDayStatus } from '../../lib/dateUtils';
 import { cn } from '../../lib/utils';
-import { Check, Circle } from 'lucide-react';
+import { Check, Circle, X } from 'lucide-react';
 
 export const TodayScore = () => {
   const { tasks, taskCompletions } = useAppStore();
   const today = getTodayStr();
-  const dayOfWeek = new Date().getDay();
 
-  const todayTasks = tasks.filter(t => {
-    if (t.frequency === 'daily') return true;
-    if (t.frequency === 'specific_days' && t.daysOfWeek?.includes(dayOfWeek)) return true;
-    return false;
-  });
-
-  const completedToday = taskCompletions.filter(tc => tc.date === today && tc.completed).length;
-  const totalToday = todayTasks.length;
-  
-  const percentage = totalToday === 0 ? 100 : Math.round((completedToday / totalToday) * 100);
+  const { status, completedCount, totalCount } = calculateDayStatus(today, tasks, taskCompletions);
 
   return (
     <div className="card mb-6 flex items-center justify-between animate-slide-up" style={{ animationDelay: '0.1s' }}>
       <div>
-        <h3 className="text-sm font-bold tracking-widest text-textMuted uppercase mb-1">Today's Score</h3>
+        <h3 className="text-sm font-bold tracking-widest text-textMuted uppercase mb-1">Today's Status</h3>
         <div className="flex items-baseline space-x-4 mb-2">
-          <span className="text-6xl font-black text-white">{percentage}</span>
           <span className={cn(
-            "text-lg font-bold uppercase tracking-widest",
-            percentage >= 80 ? "text-success" : percentage >= 50 ? "text-primary" : "text-textMuted"
+            "text-4xl font-black uppercase tracking-tight",
+            status === 'completed' ? "text-success" : status === 'failed' ? "text-red-500" : "text-white"
           )}>
-            {percentage >= 80 ? "Excellent" : percentage >= 50 ? "Good" : "Keep Pushing"}
+            {status === 'completed' ? 'COMPLETE' : status === 'failed' ? 'MISSED' : 'ACTIVE'}
           </span>
         </div>
         <div className="text-sm font-medium text-textMuted uppercase tracking-wider">
-          Completed: {completedToday} / {totalToday}
+          Tasks Completed: {completedCount} / {totalCount}
         </div>
       </div>
       
-      {/* Progress Ring visual */}
-      <div className="relative w-16 h-16">
-        <svg className="w-16 h-16 transform -rotate-90">
-          <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-surfaceHighlight" />
-          <circle 
-            cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="6" fill="transparent" 
-            strokeDasharray={2 * Math.PI * 28}
-            strokeDashoffset={2 * Math.PI * 28 * (1 - percentage / 100)}
-            className="text-primary transition-all duration-1000 ease-out" 
-          />
-        </svg>
+      {/* Visual icon for status */}
+      <div className="flex items-center justify-center w-16 h-16 rounded-full bg-surfaceHighlight border border-border">
+        {status === 'completed' && <Check className="w-8 h-8 text-success" strokeWidth={3} />}
+        {status === 'failed' && <X className="w-8 h-8 text-red-500" strokeWidth={3} />}
+        {status === 'pending' && <Circle className="w-8 h-8 text-primary animate-pulse" strokeWidth={3} />}
       </div>
     </div>
   );

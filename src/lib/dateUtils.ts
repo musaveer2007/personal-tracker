@@ -1,4 +1,5 @@
 import { differenceInDays, format, parseISO, isBefore, isAfter, startOfDay } from 'date-fns';
+import type { Task, TaskCompletion } from '../data/types';
 
 export const getTodayStr = () => format(new Date(), 'yyyy-MM-dd');
 
@@ -47,12 +48,56 @@ export const getChallengeStats = (startDateStr: string, endDateStr: string) => {
   };
 };
 
+export const getWeekNumber = (startDateStr: string) => {
+  // Wait, I can just calculate it directly.
+  const start = parseISO(startDateStr);
+  const today = startOfDay(new Date());
+  if (isBefore(today, start)) return 1;
+  const daysCompleted = differenceInDays(today, start);
+  return Math.floor(daysCompleted / 7) + 1;
+};
+
 export const formatDateDisplay = (dateStr: string) => {
   if (!dateStr) return '';
   return format(parseISO(dateStr), 'MMM d, yyyy');
 };
 
-export const calculateStreak = (manualDayCompletions: Record<string, boolean>) => {
+export const calculateDayStatus = (
+  dateStr: string,
+  tasks: Task[],
+  taskCompletions: TaskCompletion[]
+): { status: 'completed' | 'failed' | 'pending' | 'future'; completedCount: number; totalCount: number } => {
+  const dateObj = parseISO(dateStr);
+  const todayDateStr = getTodayStr();
+  const todayObj = startOfDay(new Date());
+  
+  const dayOfWeek = dateObj.getDay();
+  const dayTasks = tasks.filter(t => {
+    if (t.frequency === 'daily') return true;
+    if (t.frequency === 'specific_days' && t.daysOfWeek?.includes(dayOfWeek)) return true;
+    return false;
+  });
+
+  const completedCount = taskCompletions.filter(tc => tc.date === dateStr && tc.completed).length;
+  const totalCount = dayTasks.length;
+
+  let status: 'completed' | 'failed' | 'pending' | 'future' = 'future';
+  const isPast = isBefore(dateObj, todayObj);
+  const isToday = dateStr === todayDateStr;
+  const isCompleted = totalCount > 0 && completedCount === totalCount;
+
+  if (isAfter(dateObj, todayObj)) {
+    status = 'future';
+  } else if (isToday) {
+    status = isCompleted ? 'completed' : 'pending';
+  } else if (isPast) {
+    status = isCompleted ? 'completed' : 'failed';
+  }
+
+  return { status, completedCount, totalCount };
+};
+
+export const calculateStreak = (tasks: Task[], taskCompletions: TaskCompletion[]) => {
   let streak = 0;
   const today = new Date();
   
@@ -62,13 +107,13 @@ export const calculateStreak = (manualDayCompletions: Record<string, boolean>) =
     dateToCheck.setDate(today.getDate() - i);
     const dateStr = format(dateToCheck, 'yyyy-MM-dd');
     
-    if (manualDayCompletions[dateStr]) {
+    const { status } = calculateDayStatus(dateStr, tasks, taskCompletions);
+    
+    if (status === 'completed') {
       streak++;
-    } else {
-      // If we missed yesterday, streak is broken. 
-      // If we missed today, we don't break the streak immediately if they still have time to finish it, 
-      // but for simplicity, we'll just stop counting if yesterday was missed.
-      if (i > 0) break; 
+    } else if (status === 'failed') {
+      // If we missed yesterday or earlier, streak is broken. 
+      break; 
     }
   }
   return streak;

@@ -17,7 +17,7 @@ export const Home = () => {
     const profile = profiles[profileId];
     if (!profile) return { currentDay: 0, percentComplete: 0, streak: 0 };
     const stats = getChallengeStats(profile.settings.startDate, profile.settings.endDate);
-    const streak = calculateStreak(profile.manualDayCompletions);
+    const streak = calculateStreak(profile.tasks, profile.taskCompletions);
     return {
       currentDay: stats.currentDay,
       percentComplete: stats.completionPercentage,

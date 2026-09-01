@@ -5,7 +5,7 @@ import { getChallengeStats, calculateStreak } from '../lib/dateUtils';
 import { Download } from 'lucide-react';
 
 export const Overview = () => {
-  const { settings, workouts, runs, manualDayCompletions, measurements } = useAppStore();
+  const { settings, workouts, runs, measurements, tasks, taskCompletions } = useAppStore();
   const stats = getChallengeStats(settings.startDate, settings.endDate);
   
   if (stats.status === 'completed') {
@@ -14,7 +14,7 @@ export const Overview = () => {
     const sortedMeasurements = [...measurements].sort((a, b) => a.date.localeCompare(b.date));
     const finalWeight = sortedMeasurements.length > 0 ? sortedMeasurements[sortedMeasurements.length - 1].weight : settings.startingWeight;
     const weightChange = finalWeight - settings.startingWeight;
-    const longestStreak = calculateStreak(manualDayCompletions);
+    const longestStreak = calculateStreak(tasks, taskCompletions);
 
     return (
       <div className="pb-12 animate-fade-in">

@@ -3,6 +3,8 @@ import { useAppStore } from '../data/store';
 import { getTodayStr } from '../lib/dateUtils';
 import { Save, Plus, Search } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { useUnsavedChanges } from '../hooks/useUnsavedChanges';
+import { UnsavedDialog } from '../components/layout/UnsavedDialog';
 
 const FOOD_DATABASE = [
   { name: 'Egg (1 large)', calories: 72, protein: 6, carbs: 0.6, fat: 4.8 },
@@ -32,14 +34,26 @@ export const Nutrition = () => {
 
   const [localNut, setLocalNut] = useState(currentNutrition);
   const [searchQuery, setSearchQuery] = useState('');
-
-  useEffect(() => {
-    setLocalNut(currentNutrition);
-  }, [today, nutrition]); // Note: keeping dependencies minimal to avoid constant re-renders during typing
+  
+  const [isDirty, setIsDirty] = useState(false);
 
   const handleSave = () => {
     updateNutrition(today, localNut);
+    setIsDirty(false);
+    return true;
   };
+
+  const handleDiscard = () => {
+    setLocalNut(currentNutrition);
+    setIsDirty(false);
+  };
+
+  const { blocker } = useUnsavedChanges(isDirty, handleSave, handleDiscard);
+
+  useEffect(() => {
+    setLocalNut(currentNutrition);
+    setIsDirty(false);
+  }, [today, nutrition]);
 
   const addFood = (food: typeof FOOD_DATABASE[0]) => {
     const updated = {
@@ -50,7 +64,7 @@ export const Nutrition = () => {
       fat: localNut.fat + food.fat
     };
     setLocalNut(updated);
-    updateNutrition(today, updated);
+    setIsDirty(true);
   };
 
   const macros = [
@@ -61,15 +75,20 @@ export const Nutrition = () => {
   ];
 
   return (
-    <div className="pb-24 animate-fade-in">
+    <div className="pb-24 animate-fade-in relative">
+      <UnsavedDialog blocker={blocker} onSave={handleSave} onDiscard={handleDiscard} />
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-black tracking-tight text-white uppercase">NUTRITION</h1>
           <p className="text-primary font-bold tracking-widest text-sm mt-1 uppercase">FUEL THE MACHINE</p>
         </div>
-        <button onClick={handleSave} className="btn-primary flex items-center space-x-2">
+        <button 
+          onClick={handleSave} 
+          disabled={!isDirty}
+          className={`flex items-center space-x-2 ${isDirty ? 'btn-primary' : 'bg-surfaceHighlight text-textMuted px-6 py-3 rounded-xl font-bold opacity-50 cursor-not-allowed'}`}
+        >
           <Save className="w-4 h-4" />
-          <span>Save</span>
+          <span>{isDirty ? 'Save' : 'Saved'}</span>
         </button>
       </div>
 
@@ -91,7 +110,10 @@ export const Nutrition = () => {
                       <input 
                         type="number"
                         value={localNut[field] || ''}
-                        onChange={(e) => setLocalNut({ ...localNut, [field]: Number(e.target.value) })}
+                        onChange={(e) => {
+                          setLocalNut({ ...localNut, [field]: Number(e.target.value) });
+                          setIsDirty(true);
+                        }}
                         className="w-16 bg-transparent border-b border-border text-right font-bold text-white focus:outline-none focus:border-primary"
                         placeholder="0"
                       />

@@ -4,6 +4,8 @@ import { getTodayStr } from '../lib/dateUtils';
 import type { JournalEntry } from '../data/types';
 import { Save } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { useUnsavedChanges } from '../hooks/useUnsavedChanges';
+import { UnsavedDialog } from '../components/layout/UnsavedDialog';
 
 export const Journal = () => {
   const { journal, updateJournal } = useAppStore();
@@ -17,13 +19,29 @@ export const Journal = () => {
   };
 
   const [localJournal, setLocalJournal] = useState<JournalEntry>(currentJournal);
+  const [isDirty, setIsDirty] = useState(false);
+  
+  const handleSave = () => {
+    updateJournal(today, localJournal);
+    setIsDirty(false);
+    return true;
+  };
+
+  const handleDiscard = () => {
+    setLocalJournal(currentJournal);
+    setIsDirty(false);
+  };
+
+  const { blocker } = useUnsavedChanges(isDirty, handleSave, handleDiscard);
 
   useEffect(() => {
     setLocalJournal(currentJournal);
+    setIsDirty(false);
   }, [today, journal]);
 
-  const handleSave = () => {
-    updateJournal(today, localJournal);
+  const handleChange = (updates: Partial<JournalEntry>) => {
+    setLocalJournal(prev => ({ ...prev, ...updates }));
+    setIsDirty(true);
   };
 
   const moods = [
@@ -35,15 +53,20 @@ export const Journal = () => {
   ];
 
   return (
-    <div className="pb-24 animate-fade-in">
+    <div className="pb-24 animate-fade-in relative">
+      <UnsavedDialog blocker={blocker} onSave={handleSave} onDiscard={handleDiscard} />
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-black tracking-tight text-white uppercase">JOURNAL</h1>
           <p className="text-primary font-bold tracking-widest text-sm mt-1 uppercase">THE MIND</p>
         </div>
-        <button onClick={handleSave} className="btn-primary flex items-center space-x-2">
+        <button 
+          onClick={handleSave} 
+          disabled={!isDirty}
+          className={`flex items-center space-x-2 ${isDirty ? 'btn-primary' : 'bg-surfaceHighlight text-textMuted px-6 py-3 rounded-xl font-bold opacity-50 cursor-not-allowed'}`}
+        >
           <Save className="w-4 h-4" />
-          <span>Save</span>
+          <span>{isDirty ? 'Save' : 'Saved'}</span>
         </button>
       </div>
 
@@ -54,7 +77,7 @@ export const Journal = () => {
             {moods.map(m => (
               <button
                 key={m.value}
-                onClick={() => setLocalJournal({ ...localJournal, mood: m.value as any })}
+                onClick={() => handleChange({ mood: m.value as any })}
                 className={cn(
                   "px-4 py-2 rounded-lg font-medium transition-colors border",
                   localJournal.mood === m.value 
@@ -75,7 +98,7 @@ export const Journal = () => {
             min="1" 
             max="5" 
             value={localJournal.energy}
-            onChange={(e) => setLocalJournal({ ...localJournal, energy: Number(e.target.value) })}
+            onChange={(e) => handleChange({ energy: Number(e.target.value) })}
             className="w-full accent-primary"
           />
         </div>
@@ -84,7 +107,7 @@ export const Journal = () => {
           <label className="text-xs font-bold tracking-widest text-textMuted uppercase block mb-3">NOTES</label>
           <textarea 
             value={localJournal.content}
-            onChange={(e) => setLocalJournal({ ...localJournal, content: e.target.value })}
+            onChange={(e) => handleChange({ content: e.target.value })}
             className="w-full bg-surfaceHighlight border border-border rounded-lg p-4 text-white focus:outline-none focus:border-primary min-h-[200px]"
             placeholder="Record your thoughts, lessons, or struggles today..."
           />
