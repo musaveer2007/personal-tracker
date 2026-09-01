@@ -40,7 +40,7 @@ export const AppShell = ({ children }: AppShellProps) => {
 
   const getFullPath = (path: string) => `/profile/${profileId}/${path}`;
 
-  const profileName = profileId === 'dhavanesh' ? 'DHAVANESH' : 'MUSAVEER';
+  const profileName = profileId === 'dhavanesh' ? 'DHAVANESH' : profileId === 'sumith' ? 'SUMITH' : 'MUSAVEER';
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

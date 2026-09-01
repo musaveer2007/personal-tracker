@@ -27,6 +27,7 @@ export const Home = () => {
 
   const musaveerStats = getProfileStats('musaveer');
   const dhavaneshStats = getProfileStats('dhavanesh');
+  const sumithStats = getProfileStats('sumith');
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
@@ -36,12 +37,12 @@ export const Home = () => {
         <p className="text-xs md:text-sm font-semibold tracking-widest text-primary mt-6">CHOOSE YOUR ARC.</p>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-6 md:gap-8 w-full max-w-4xl px-4">
+      <div className="flex flex-col md:flex-row gap-6 md:gap-8 w-full max-w-6xl px-4 flex-wrap justify-center">
         
         {/* Musaveer Card */}
         <button 
           onClick={() => handleSelectProfile('musaveer')}
-          className="flex-1 group relative bg-surface border border-border hover:border-primary/50 rounded-2xl p-8 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/10 text-left overflow-hidden"
+          className="flex-[1_1_300px] group relative bg-surface border border-border hover:border-primary/50 rounded-2xl p-8 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/10 text-left overflow-hidden"
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110" />
           
@@ -76,7 +77,7 @@ export const Home = () => {
         {/* Dhavanesh Card */}
         <button 
           onClick={() => handleSelectProfile('dhavanesh')}
-          className="flex-1 group relative bg-surface border border-border hover:border-blue-500/50 rounded-2xl p-8 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-blue-500/10 text-left overflow-hidden"
+          className="flex-[1_1_300px] group relative bg-surface border border-border hover:border-blue-500/50 rounded-2xl p-8 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-blue-500/10 text-left overflow-hidden"
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110" />
           
@@ -104,6 +105,41 @@ export const Home = () => {
 
             <div className="flex items-center text-sm font-bold tracking-wider text-textMain group-hover:text-blue-500 transition-colors">
               ENTER DHAVANESH'S ARC <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+            </div>
+          </div>
+        </button>
+
+        {/* Sumith Card */}
+        <button 
+          onClick={() => handleSelectProfile('sumith')}
+          className="flex-[1_1_300px] group relative bg-surface border border-border hover:border-purple-500/50 rounded-2xl p-8 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-purple-500/10 text-left overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110" />
+          
+          <div className="relative z-10">
+            <h2 className="text-3xl font-black tracking-tight text-textMain mb-1 uppercase">Sumith</h2>
+            <p className="text-sm font-bold tracking-widest text-purple-500 mb-8">HIS WINTER ARC</p>
+            
+            <div className="space-y-4 mb-8">
+              <div>
+                <p className="text-xs text-textMuted font-medium uppercase tracking-wider mb-1">Progress</p>
+                <div className="flex items-end space-x-2">
+                  <span className="text-2xl font-bold">Day {sumithStats.currentDay}/100</span>
+                  <span className="text-sm text-textMuted mb-1">({Math.round(sumithStats.percentComplete)}%)</span>
+                </div>
+              </div>
+              
+              <div>
+                <p className="text-xs text-textMuted font-medium uppercase tracking-wider mb-1">Current Streak</p>
+                <div className="flex items-center space-x-2 text-orange-500 font-bold">
+                  <span>🔥</span>
+                  <span>{sumithStats.streak} DAYS</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center text-sm font-bold tracking-wider text-textMain group-hover:text-purple-500 transition-colors">
+              ENTER SUMITH'S ARC <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
             </div>
           </div>
         </button>

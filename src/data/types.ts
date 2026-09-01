@@ -92,6 +92,7 @@ export interface ChallengeSettings {
   goalWeightMin: number;
   goalWeightMax: number;
   height: number;
+  goal?: string;
   targetCalories: number;
   targetProtein: number;
   targetCarbs: number;

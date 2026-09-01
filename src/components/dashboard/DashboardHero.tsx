@@ -13,7 +13,7 @@ export const DashboardHero = () => {
   };
 
   const currentProfileId = useAppStore(state => state.currentProfileId);
-  const profileName = currentProfileId === 'dhavanesh' ? 'DHAVANESH' : 'MUSAVEER';
+  const profileName = currentProfileId === 'dhavanesh' ? 'DHAVANESH' : currentProfileId === 'sumith' ? 'SUMITH' : 'MUSAVEER';
 
   return (
     <div className="mb-8 animate-slide-up">

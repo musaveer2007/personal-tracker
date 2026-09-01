@@ -2,8 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from '../lib/supabase';
 import type { AppState, RootState, ProfileData } from './types';
-import { defaultSettings, defaultTasks, dhavaneshSettings, dhavaneshTasks } from './seed';
-
+import { defaultSettings, defaultTasks, dhavaneshSettings, dhavaneshTasks, sumithSettings, sumithTasks } from './seed';
 const initialProfileData = (settings: any, tasks: any): ProfileData => ({
   settings,
   tasks,
@@ -39,6 +38,7 @@ export const useRootStore = create<RootState>()(
       profiles: {
         musaveer: initialProfileData(defaultSettings, defaultTasks),
         dhavanesh: initialProfileData(dhavaneshSettings, dhavaneshTasks),
+        sumith: initialProfileData(sumithSettings, sumithTasks),
       },
       currentProfileId: 'musaveer',
 
@@ -134,14 +134,14 @@ export const useRootStore = create<RootState>()(
     }),
     {
       name: 'winter-arc-storage',
-      version: 2,
+      version: 3,
       migrate: (persistedState: any, version: number) => {
-        if (version === 0 || version === 1 || !persistedState.profiles) {
+        if (version === 0 || version === 1 || version === 2 || !persistedState.profiles) {
           const old = persistedState;
           return {
-            currentProfileId: 'musaveer',
+            currentProfileId: old.currentProfileId || 'musaveer',
             profiles: {
-              musaveer: {
+              musaveer: old.profiles?.musaveer || {
                 settings: old.settings || defaultSettings,
                 tasks: old.tasks || defaultTasks,
                 taskCompletions: old.taskCompletions || [],
@@ -153,7 +153,8 @@ export const useRootStore = create<RootState>()(
                 journal: old.journal || {},
                 manualDayCompletions: old.manualDayCompletions || {},
               },
-              dhavanesh: initialProfileData(dhavaneshSettings, dhavaneshTasks),
+              dhavanesh: old.profiles?.dhavanesh || initialProfileData(dhavaneshSettings, dhavaneshTasks),
+              sumith: old.profiles?.sumith || initialProfileData(sumithSettings, sumithTasks),
             }
           };
         }

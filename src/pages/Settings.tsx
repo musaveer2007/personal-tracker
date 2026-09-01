@@ -76,6 +76,17 @@ export const Settings = () => {
         <div className="card space-y-4">
           <h2 className="text-sm font-bold tracking-widest text-textMuted uppercase mb-4">PROFILE & GOALS</h2>
           
+          <div className="mb-4">
+            <label className="text-xs font-bold text-textMuted uppercase block mb-1">Primary Goal</label>
+            <input 
+              type="text" 
+              value={settings.goal || ''} 
+              onChange={(e) => handleChange('goal', e.target.value)}
+              placeholder="e.g., Build muscle + achieve an aesthetic athletic physique"
+              className="w-full bg-surfaceHighlight border border-border rounded-lg p-2 text-white focus:border-primary focus:outline-none"
+            />
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-xs font-bold text-textMuted uppercase block mb-1">Starting Weight (kg)</label>
