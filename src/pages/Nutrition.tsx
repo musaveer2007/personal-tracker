@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAppStore } from '../data/store';
 import { getTodayStr } from '../lib/dateUtils';
-import { Save, Plus, Search, BookmarkPlus, ChevronRight } from 'lucide-react';
+import { Save, Plus, Search } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 const FOOD_DATABASE = [

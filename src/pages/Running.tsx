@@ -160,7 +160,7 @@ export const Running = () => {
                   <Tooltip 
                     cursor={{ fill: 'rgba(245, 158, 11, 0.1)' }}
                     contentStyle={{ backgroundColor: '#171717', border: '1px solid #262626', borderRadius: '0.5rem' }}
-                    labelFormatter={(val) => new Date(val).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    labelFormatter={(val) => new Date(val as string).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   />
                   <Bar dataKey="distance" fill="#f59e0b" radius={[4, 4, 0, 0]} />
                 </BarChart>
@@ -174,7 +174,7 @@ export const Running = () => {
                   <YAxis reversed hide />
                   <Tooltip 
                     contentStyle={{ backgroundColor: '#171717', border: '1px solid #262626', borderRadius: '0.5rem' }}
-                    labelFormatter={(val) => new Date(val).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    labelFormatter={(val) => new Date(val as string).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   />
                   <Line type="monotone" dataKey="numPace" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, fill: '#3b82f6', strokeWidth: 0 }} />
                 </LineChart>
