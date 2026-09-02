@@ -78,13 +78,15 @@ export const calculateDayStatus = (
     return false;
   });
 
-  const completedCount = taskCompletions.filter(tc => tc.date === dateStr && tc.completed).length;
+  const completedCount = dayTasks.filter(t => 
+    taskCompletions.some(tc => tc.taskId === t.id && tc.date === dateStr && tc.completed)
+  ).length;
   const totalCount = dayTasks.length;
 
   let status: 'completed' | 'failed' | 'pending' | 'future' | 'partial' = 'future';
   const isPast = isBefore(dateObj, todayObj);
   const isToday = dateStr === todayDateStr;
-  const isCompleted = totalCount > 0 && completedCount === totalCount;
+  const isCompleted = totalCount > 0 && completedCount >= totalCount;
   const isPartial = totalCount > 0 && completedCount > 0 && completedCount < totalCount;
 
   if (isAfter(dateObj, todayObj)) {
