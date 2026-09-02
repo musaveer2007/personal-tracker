@@ -79,7 +79,7 @@ export const Recovery = () => {
     // In milliseconds, then to seconds
     let durationSeconds = (wakeTime - bedTime) / 1000;
     if (durationSeconds < 0) durationSeconds = 0; // fallback if somehow negative
-    const durationHours = durationSeconds / 3600;
+    const durationHours = Number((durationSeconds / 3600).toFixed(1));
 
     const newSleep: SleepEntry = {
       ...localSleep,
@@ -342,7 +342,7 @@ export const Recovery = () => {
                     </div>
                     <div className="text-right">
                       <p className="text-lg font-black text-white">
-                        {entry.durationSeconds ? formatDuration(entry.durationSeconds) : `${entry.hours}h`}
+                        {entry.durationSeconds ? formatDuration(entry.durationSeconds) : `${Number(entry.hours).toFixed(1)}h`}
                       </p>
                     </div>
                   </div>

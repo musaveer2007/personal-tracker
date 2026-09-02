@@ -202,7 +202,7 @@ export const CalendarView = () => {
                   <span className="font-bold tracking-widest uppercase text-sm">Sleep</span>
                 </div>
                 <span className="font-black text-white">
-                  {sleep[selectedDate]?.hours || 0} hrs
+                  {sleep[selectedDate]?.hours ? Number(sleep[selectedDate].hours).toFixed(1) : 0} hrs
                 </span>
               </div>
 
