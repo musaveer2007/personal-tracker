@@ -176,6 +176,40 @@ export const CalendarView = () => {
                 return null;
               })()}
 
+              {(() => {
+                const dayWorkouts = workouts.filter(w => w.date === selectedDate);
+                const allExercises = dayWorkouts.flatMap(w => w.exercises).filter(ex => ex && ex.name.trim() !== '');
+                
+                if (allExercises.length > 0) {
+                  const exercisesWithCompletedSets = allExercises.filter(ex => ex.sets.some(s => s.completed));
+                  
+                  if (exercisesWithCompletedSets.length > 0) {
+                    return (
+                      <div className="p-4 bg-surfaceHighlight rounded-xl border border-border space-y-2">
+                        <div className="flex items-center space-x-3 mb-3">
+                          <Activity className="w-5 h-5 text-primary" />
+                          <span className="font-bold tracking-widest uppercase text-sm">Weight Training</span>
+                        </div>
+                        {exercisesWithCompletedSets.map((ex, idx) => {
+                          const completedSets = ex.sets.filter(s => s.completed);
+                          const bestSet = completedSets.reduce((best, current) => current.weight > best.weight ? current : best, completedSets[0]);
+                          return (
+                            <div key={`${ex.id}-${idx}`} className="flex justify-between text-sm items-center border-b border-border/50 pb-2 last:border-0 last:pb-0">
+                              <span className="text-textMuted uppercase tracking-wider font-bold">{ex.name}</span>
+                              <span className="text-white font-black text-right">
+                                {completedSets.length} sets 
+                                <span className="text-textMuted text-[10px] ml-2 font-bold tracking-widest">BEST: {bestSet.weight}kg × {bestSet.reps}</span>
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  }
+                }
+                return null;
+              })()}
+
               <div className="flex items-center justify-between p-4 bg-surfaceHighlight rounded-xl border border-border">
                 <div className="flex items-center space-x-3">
                   <Utensils className="w-5 h-5 text-orange-500" />
