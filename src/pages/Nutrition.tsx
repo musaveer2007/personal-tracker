@@ -24,6 +24,7 @@ const FOOD_DATABASE = [
   { name: '1 Dosa', calories: 170, protein: 4, carbs: 29, fat: 4 },
   { name: '1 Idly', calories: 60, protein: 2, carbs: 12, fat: 0.5 },
   { name: '1 Egg White', calories: 17, protein: 3.6, carbs: 0.2, fat: 0.1 },
+  { name: 'Nutrition in One Spoon (1 Tbsp / 16g)', calories: 95, protein: 3.8, carbs: 3.5, fat: 8 },
 ];
 
 export const Nutrition = () => {
