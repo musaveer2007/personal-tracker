@@ -23,7 +23,7 @@ const FOOD_DATABASE = [
   { name: '20 Soya Chunks', calories: 70, protein: 10, carbs: 7, fat: 0.1 },
   { name: '1 Dosa', calories: 170, protein: 4, carbs: 29, fat: 4 },
   { name: '1 Idly', calories: 60, protein: 2, carbs: 12, fat: 0.5 },
-  { name: 'Egg Whites (100g)', calories: 52, protein: 11, carbs: 1, fat: 0 },
+  { name: '1 Egg White', calories: 17, protein: 3.6, carbs: 0.2, fat: 0.1 },
 ];
 
 export const Nutrition = () => {
