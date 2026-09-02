@@ -17,6 +17,12 @@ const FOOD_DATABASE = [
   { name: 'Banana (1 medium)', calories: 105, protein: 1.3, carbs: 27, fat: 0.3 },
   { name: 'Peanuts (100g)', calories: 567, protein: 25.8, carbs: 16.1, fat: 49.2 },
   { name: 'Chana (100g boiled)', calories: 164, protein: 8.9, carbs: 27.4, fat: 2.6 },
+  { name: '2 Chapathis', calories: 200, protein: 6, carbs: 40, fat: 2 },
+  { name: '100g Masoor Dal', calories: 116, protein: 9, carbs: 20, fat: 0.4 },
+  { name: '100g Oats + 50g Muesli + 150ml Milk', calories: 660, protein: 26, carbs: 103, fat: 15 },
+  { name: '20 Soya Chunks', calories: 70, protein: 10, carbs: 7, fat: 0.1 },
+  { name: '1 Dosa', calories: 170, protein: 4, carbs: 29, fat: 4 },
+  { name: '1 Idly', calories: 60, protein: 2, carbs: 12, fat: 0.5 },
 ];
 
 export const Nutrition = () => {
