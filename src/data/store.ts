@@ -134,7 +134,7 @@ export const useRootStore = create<RootState>()(
     }),
     {
       name: 'winter-arc-storage',
-      version: 4,
+      version: 5,
       migrate: (persistedState: any, version: number) => {
         let state = persistedState;
         
@@ -174,6 +174,37 @@ export const useRootStore = create<RootState>()(
           });
         }
         
+        if (version < 5) {
+          // Mark Sep 1 and Sep 3 as completed for Dhavanesh
+          if (state.profiles?.dhavanesh) {
+            const dhavaneshTasks = state.profiles.dhavanesh.tasks || [];
+            const fixes = [
+              { date: '2026-09-01', dayOfWeek: 2 }, // Tuesday
+              { date: '2026-09-03', dayOfWeek: 4 }  // Thursday
+            ];
+            let completions = [...(state.profiles.dhavanesh.taskCompletions || [])];
+            
+            fixes.forEach(({ date, dayOfWeek }) => {
+              dhavaneshTasks.forEach((t: any) => {
+                let applies = false;
+                if (t.frequency === 'daily') applies = true;
+                if (t.frequency === 'specific_days' && t.daysOfWeek?.includes(dayOfWeek)) applies = true;
+                
+                if (applies) {
+                  const existingIndex = completions.findIndex((c: any) => c.taskId === t.id && c.date === date);
+                  if (existingIndex >= 0) {
+                    completions[existingIndex] = { ...completions[existingIndex], completed: true };
+                  } else {
+                    completions.push({ taskId: t.id, date, completed: true });
+                  }
+                }
+              });
+            });
+            
+            state.profiles.dhavanesh.taskCompletions = completions;
+          }
+        }
+
         return state;
       }
     }
