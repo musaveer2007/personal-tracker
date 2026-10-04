@@ -1,9 +1,11 @@
 import { type ReactNode } from 'react';
 import { NavLink, useLocation, useParams, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, CheckSquare, Dumbbell, Activity, Apple, ActivitySquare, Settings as SettingsIcon, Calendar, BookOpen, ArrowLeft, Droplets, UserCircle, HeartPulse, Sparkles, Scissors, Trophy } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, Dumbbell, Activity, Apple, ActivitySquare, Settings as SettingsIcon, Calendar, BookOpen, ArrowLeft, Droplets, UserCircle, HeartPulse, Sparkles, Scissors, Trophy, Users, Medal, Briefcase } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { useRootStore } from '../../data/store';
+import { useRootStore, useAppStore } from '../../data/store';
 import { CommandPalette } from './CommandPalette';
+import { GritToast } from '../ui/GritToast';
+import { AchievementToast } from '../ui/AchievementToast';
 import { useEffect } from 'react';
 
 interface AppShellProps {
@@ -25,6 +27,11 @@ const navItems = [
   { path: 'progress', label: 'Progress', icon: ActivitySquare },
   { path: 'journal', label: 'Journal', icon: BookOpen },
   { path: 'achievements', label: 'Achievements', icon: Trophy },
+  { path: 'leaderboards', label: 'Leaderboard', icon: Medal },
+  { path: 'challenges', label: 'Challenges', icon: Activity },
+  { path: 'coach', label: 'AI Coach', icon: Sparkles },
+  { path: 'friends', label: 'Friends', icon: Users },
+  { path: 'trainer', label: 'Trainer Mode', icon: Briefcase },
 ];
 
 export const AppShell = ({ children }: AppShellProps) => {
@@ -40,7 +47,8 @@ export const AppShell = ({ children }: AppShellProps) => {
 
   const getFullPath = (path: string) => `/profile/${profileId}/${path}`;
 
-  const profileName = profileId === 'dhavanesh' ? 'DHAVANESH' : profileId === 'sumith' ? 'SUMITH' : 'MUSAVEER';
+  const { displayName, username } = useAppStore();
+  const profileName = displayName || username || (profileId === 'dhavanesh' ? 'DHAVANESH' : profileId === 'sumith' ? 'SUMITH' : 'MUSAVEER');
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -67,6 +75,8 @@ export const AppShell = ({ children }: AppShellProps) => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col md:flex-row text-textMain">
+      <AchievementToast />
+      <GritToast />
       <CommandPalette />
       
       {/* Desktop Sidebar */}

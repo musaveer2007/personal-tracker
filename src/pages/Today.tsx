@@ -1,7 +1,9 @@
-import { TodayScore, TodayChecklist } from '../components/dashboard/TodayComponents';
+import { TodayScore, TodayChecklist, TodayCompetitionCard } from '../components/dashboard/TodayComponents';
+import { TodayAIBrief } from '../components/dashboard/TodayAIBrief';
+import { TodayGrit } from '../components/ui/TodayGrit';
 import { useAppStore } from '../data/store';
-import { getTodayStr, getChallengeStats, calculateDayStatus } from '../lib/dateUtils';
-import { CheckCircle2 } from 'lucide-react';
+import { getTodayStr, getChallengeStats, calculateDayStatus, calculateStreak } from '../lib/dateUtils';
+import { CheckCircle2, Flame } from 'lucide-react';
 
 export const Today = () => {
   const { tasks, taskCompletions, settings } = useAppStore();
@@ -13,12 +15,25 @@ export const Today = () => {
 
   return (
     <div className="pb-24">
-      <div className="mb-6 animate-slide-up">
-        <h1 className="text-3xl font-black tracking-tight text-white uppercase">DAY {stats.currentDay > 100 ? 100 : stats.currentDay} / 100</h1>
-        <p className="text-textMuted font-medium tracking-wider text-sm mt-1">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+      <div className="mb-6 animate-slide-up flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-black tracking-tight text-white uppercase">DAY {stats.currentDay > stats.totalDays ? stats.totalDays : stats.currentDay} / {stats.totalDays}</h1>
+          <p className="text-textMuted font-medium tracking-wider text-sm mt-1">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+        </div>
+        <div className="flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 px-4 py-2 rounded-xl text-orange-500 font-black tracking-widest uppercase text-sm">
+          <Flame className="w-5 h-5" />
+          {calculateStreak(tasks, taskCompletions)} Day Streak
+        </div>
       </div>
+      
+      <TodayAIBrief />
 
-      <TodayScore />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 items-start">
+        <TodayScore />
+        <TodayGrit />
+      </div>
+      
+      <TodayCompetitionCard />
       
       <div className="mb-8">
         <TodayChecklist />

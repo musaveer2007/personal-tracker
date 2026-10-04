@@ -1,7 +1,11 @@
 import { useAppStore } from '../../data/store';
 import { getTodayStr, calculateDayStatus } from '../../lib/dateUtils';
 import { cn } from '../../lib/utils';
-import { Check, Circle, X } from 'lucide-react';
+import { Check, Circle, X, Trophy, ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { leaderboardService } from '../../lib/leaderboard';
+import type { LeaderboardEntry } from '../../lib/leaderboard';
 
 export const TodayScore = () => {
   const { tasks, taskCompletions } = useAppStore();
@@ -103,6 +107,60 @@ export const TodayChecklist = () => {
             </div>
           );
         })}
+      </div>
+    </div>
+  );
+};
+
+export const TodayCompetitionCard = () => {
+  const currentProfileId = useAppStore(state => state.currentProfileId);
+  const [me, setMe] = useState<LeaderboardEntry | null>(null);
+  const [aboveMe, setAboveMe] = useState<LeaderboardEntry | null>(null);
+
+  useEffect(() => {
+    if (!currentProfileId) return;
+    leaderboardService.getLeaderboard('FRIENDS', 'THIS_WEEK').then(entries => {
+      const myIndex = entries.findIndex(e => e.profile_id === currentProfileId);
+      if (myIndex >= 0) {
+        setMe(entries[myIndex]);
+        if (myIndex > 0) {
+          setAboveMe(entries[myIndex - 1]);
+        }
+      }
+    }).catch(console.error);
+  }, [currentProfileId]);
+
+  if (!me) return null;
+
+  return (
+    <div className="card bg-surface/30 border-border mb-8 animate-slide-up" style={{ animationDelay: '0.15s' }}>
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-xs font-bold tracking-widest text-textMuted uppercase mb-2 flex items-center gap-1">
+            <Trophy className="w-3 h-3" /> Your Competition
+          </h3>
+          <p className="text-lg font-black text-white uppercase tracking-tight">
+            🔥 You're #{me.rank} among friends
+          </p>
+          <p className="text-sm font-bold text-primary tracking-widest mt-1">
+            {me.score.toLocaleString()} GRIT
+          </p>
+          
+          {aboveMe && (
+            <p className="text-xs font-medium text-textMuted mt-2">
+              #{aboveMe.rank} is only {aboveMe.score - me.score} GRIT ahead.
+            </p>
+          )}
+          {!aboveMe && (
+            <p className="text-xs font-medium text-textMuted mt-2">
+              You're in the lead! Don't slow down.
+            </p>
+          )}
+        </div>
+        
+        <Link to="/leaderboards" className="w-10 h-10 rounded-full bg-surfaceHighlight flex items-center justify-center text-textMuted hover:text-white transition-colors">
+          <ChevronRight className="w-5 h-5" />
+        </Link>
       </div>
     </div>
   );

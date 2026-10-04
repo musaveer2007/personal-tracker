@@ -1,6 +1,32 @@
 import { differenceInDays, format, parseISO, isBefore, isAfter, startOfDay } from 'date-fns';
 import type { Task, TaskCompletion } from '../data/types';
 
+// ==========================================
+// TIME & DATE STANDARDIZATION
+// ==========================================
+
+export const getUserTimezone = () => {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone;
+};
+
+export const getUserLocalDate = () => {
+  return new Date();
+};
+
+export const getStartOfUserDay = (date: Date = new Date()) => {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+
+export const getEndOfUserDay = (date: Date = new Date()) => {
+  const d = new Date(date);
+  d.setHours(23, 59, 59, 999);
+  return d;
+};
+
+export const getIsoTimestamp = () => new Date().toISOString();
+
 export const getTodayStr = () => format(new Date(), 'yyyy-MM-dd');
 
 export const getChallengeStats = (startDateStr: string, endDateStr: string) => {
@@ -8,7 +34,7 @@ export const getChallengeStats = (startDateStr: string, endDateStr: string) => {
   const end = parseISO(endDateStr);
   const today = startOfDay(new Date());
 
-  const totalDays = 100; // Hardcoded for 100 days challenge
+  const totalDays = differenceInDays(end, start) + 1; // Dynamic based on dates
   
   if (isBefore(today, start)) {
     const daysUntilStart = differenceInDays(start, today);
@@ -19,17 +45,19 @@ export const getChallengeStats = (startDateStr: string, endDateStr: string) => {
       daysRemaining: totalDays,
       completionPercentage: 0,
       daysUntilStart,
+      totalDays,
     };
   }
 
   if (isAfter(today, end)) {
     return {
       status: 'completed',
-      currentDay: 100,
-      daysCompleted: 100,
+      currentDay: totalDays,
+      daysCompleted: totalDays,
       daysRemaining: 0,
       completionPercentage: 100,
       daysUntilStart: 0,
+      totalDays,
     };
   }
 
@@ -45,6 +73,7 @@ export const getChallengeStats = (startDateStr: string, endDateStr: string) => {
     daysRemaining,
     completionPercentage,
     daysUntilStart: 0,
+    totalDays,
   };
 };
 

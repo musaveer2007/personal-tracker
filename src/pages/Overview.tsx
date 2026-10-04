@@ -1,5 +1,6 @@
 import { DashboardHero } from '../components/dashboard/DashboardHero';
 import { TodayScore, TodayChecklist } from '../components/dashboard/TodayComponents';
+import { GritProgress } from '../components/ui/GritProgress';
 import { useAppStore } from '../data/store';
 import { getChallengeStats, calculateStreak } from '../lib/dateUtils';
 import { Download } from 'lucide-react';
@@ -64,8 +65,9 @@ export const Overview = () => {
   }
 
   return (
-    <div className="pb-12 animate-fade-in">
+    <div className="pb-12 animate-fade-in space-y-6">
       <DashboardHero />
+      <GritProgress />
       <TodayScore />
       <TodayChecklist />
     </div>

@@ -135,6 +135,15 @@ export interface ProfileData {
   sleep: Record<string, SleepEntry>;
   journal: Record<string, JournalEntry>;
   manualDayCompletions: Record<string, boolean>;
+  
+  // V2 Identity Upgrades
+  isOnboarded?: boolean;
+  username?: string;
+  displayName?: string;
+  avatarUrl?: string;
+  fitnessGoal?: string;
+  activityLevel?: string;
+  timezone?: string;
 }
 
 export interface ProfileMetadata {
@@ -143,11 +152,18 @@ export interface ProfileMetadata {
   subtitle: string;
 }
 
+export interface GritBalance {
+  totalXP: number;
+  currentLevel: number;
+}
+
 export interface AppState extends ProfileData {
   currentProfileId: string;
+  grit: GritBalance;
   
   // Actions
   updateSettings: (settings: Partial<ChallengeSettings>) => void;
+  updateProfileInfo: (info: Partial<ProfileData>) => void;
   addTask: (task: Task) => void;
   updateTask: (task: Task) => void;
   deleteTask: (taskId: string) => void;
@@ -166,9 +182,11 @@ export interface AppState extends ProfileData {
 export interface RootState {
   profiles: Record<string, ProfileData>;
   currentProfileId: string;
+  gritBalances: Record<string, GritBalance>;
   
   // Actions that operate on `state.profiles[state.currentProfileId]`
   updateSettings: (settings: Partial<ChallengeSettings>) => void;
+  updateProfileInfo: (info: Partial<ProfileData>) => void;
   addTask: (task: Task) => void;
   updateTask: (task: Task) => void;
   deleteTask: (taskId: string) => void;
@@ -182,4 +200,5 @@ export interface RootState {
   updateJournal: (date: string, journal: JournalEntry) => void;
   resetData: () => void;
   switchProfile: (id: string) => void;
+  updateGritBalanceLocally: (profileId: string, addedXP: number, newLevel: number) => void;
 }

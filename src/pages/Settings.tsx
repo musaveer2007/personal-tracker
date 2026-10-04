@@ -3,6 +3,7 @@ import { useAppStore } from '../data/store';
 import { RefreshCw, Plus, Trash2, Download, Upload } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { useRef } from 'react';
+import { useAuthStore } from '../lib/auth';
 import type { Task } from '../data/types';
 
 export const Settings = () => {
@@ -11,6 +12,12 @@ export const Settings = () => {
   const [newTaskName, setNewTaskName] = useState('');
   const [newTaskCategory, setNewTaskCategory] = useState<Task['category']>('fitness');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { signOut, user } = useAuthStore();
+  const { updateProfileInfo, displayName, username } = useAppStore();
+
+  const handleProfileChange = (field: string, value: string) => {
+    updateProfileInfo({ [field]: value });
+  };
 
   const handleChange = (field: keyof typeof settings, value: any) => {
     updateSettings({ [field]: value });
@@ -73,11 +80,49 @@ export const Settings = () => {
       </div>
 
       <div className="space-y-6">
+        
+        <div className="card space-y-4">
+          <h2 className="text-sm font-bold tracking-widest text-textMuted uppercase mb-4">ACCOUNT</h2>
+          <div className="p-4 bg-surfaceHighlight/30 rounded-lg border border-border">
+            <p className="text-sm font-medium text-white mb-1">Email Address</p>
+            <p className="text-xs text-textMuted">{user?.email || 'Not connected'}</p>
+          </div>
+          <button 
+            onClick={() => signOut()}
+            className="w-full bg-surfaceHighlight text-white border border-border py-3 rounded-lg font-bold uppercase tracking-wider hover:bg-border transition-colors"
+          >
+            Sign Out
+          </button>
+        </div>
+
         <div className="card space-y-4">
           <h2 className="text-sm font-bold tracking-widest text-textMuted uppercase mb-4">PROFILE & GOALS</h2>
           
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="text-xs font-bold text-textMuted uppercase block mb-1">Display Name</label>
+              <input 
+                type="text" 
+                value={displayName || ''} 
+                onChange={(e) => handleProfileChange('displayName', e.target.value)}
+                placeholder="e.g. John Doe"
+                className="w-full bg-surfaceHighlight border border-border rounded-lg p-2 text-white focus:border-primary focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-textMuted uppercase block mb-1">Username</label>
+              <input 
+                type="text" 
+                value={username || ''} 
+                onChange={(e) => handleProfileChange('username', e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                placeholder="johndoe"
+                className="w-full bg-surfaceHighlight border border-border rounded-lg p-2 text-white focus:border-primary focus:outline-none"
+              />
+            </div>
+          </div>
+          
           <div className="mb-4">
-            <label className="text-xs font-bold text-textMuted uppercase block mb-1">Primary Goal</label>
+            <label className="text-xs font-bold text-textMuted uppercase block mb-1">Challenge Goal</label>
             <input 
               type="text" 
               value={settings.goal || ''} 
